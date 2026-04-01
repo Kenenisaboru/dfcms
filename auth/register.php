@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
             $stmt = $pdo->prepare("INSERT INTO users (full_name, email, password, role) VALUES (?, ?, ?, ?)");
-            if ($stmt->execute([fullName, $email, $hashedPassword, $role])) {
+            if ($stmt->execute([$fullName, $email, $hashedPassword, $role])) {
                 $success = "Success! Login now.";
             } else {
                 $error = "Registration failed.";
@@ -69,9 +69,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .form-container { width: 100%; max-width: 400px; }
         .form-label { color: #cfcfcf !important; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; display: block; }
         .form-control, .form-select { 
-            background-color: #1a1a1a !important; border: 1px solid #444 !important; color: #fff !important; 
+            background-color: #eef2f7 !important; /* Light-blue backdrop for contrast */
+            border: 1px solid #444 !important; 
+            color: #000 !important; /* Dark text on light background inside */
             padding: 12px !important; border-radius: 8px !important; margin-bottom: 20px;
         }
+        .form-control::placeholder { color: #555 !important; }
         .form-control:focus { border-color: #10b981 !important; box-shadow: 0 0 0 0.2rem rgba(16,185,129,0.25) !important; }
         .btn-submit { 
             background-color: #10b981; border: none; padding: 14px; width: 100%; color: #000; font-weight: 800;
