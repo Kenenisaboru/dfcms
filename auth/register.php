@@ -72,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         .content-left {
             flex: 1.2;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(0, 0, 0, 0.9)), url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.4), rgba(0, 0, 0, 0.9)), url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
             background-size: cover;
             background-position: center;
             display: flex;
@@ -122,9 +122,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             transform: translateY(-2px);
         }
         .text-accent { color: #10b981; }
-        .quote-icon { font-size: 3rem; color: #10b981; margin-bottom: 20px; opacity: 0.5; }
-        .motivational-speech h1 { font-size: 3.5rem; font-weight: 800; margin-bottom: 20px; line-height: 1.1; }
-        .motivational-speech p { font-size: 1.25rem; color: #ccc; line-height: 1.6; }
+        .quote-icon { font-size: 3rem; color: #10b981; margin-bottom: 20px; opacity: 0.8; }
+        .motivational-speech h1 { 
+            font-size: 3.5rem; 
+            font-weight: 800; 
+            margin-bottom: 20px; 
+            line-height: 1.1; 
+            text-shadow: 2px 2px 15px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.5);
+        }
+        .motivational-speech p { 
+            font-size: 1.25rem; 
+            color: #ffffff; 
+            line-height: 1.6; 
+            text-shadow: 1px 1px 10px rgba(0,0,0,0.9);
+        }
+        .motivational-speech .text-accent { 
+            color: #34d399 !important; /* Brighter emerald for visibility */
+            text-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
 
         @media (max-width: 992px) {
             .content-left { display: none; }
