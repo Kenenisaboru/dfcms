@@ -70,9 +70,9 @@ $inbox = $stmt->fetchAll();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #0c0d0e; color: #fff; font-family: 'Inter', sans-serif; }
-        .navbar-custom { background-color: #121212; border-bottom: 1px solid #333; }
-        .card-custom { background-color: #121212; border: 1px solid #333; border-radius: 12px; margin-top: 20px; padding: 30px; }
+        body { background-color: #010409; color: #fff; font-family: 'Inter', sans-serif; }
+        .navbar-custom { background-color: #0d1117; border-bottom: 1px solid #30363d; }
+        .card-custom { background-color: #0d1117; border: 1px solid #30363d; border-radius: 12px; margin-top: 20px; padding: 30px; }
         .form-control, .form-select { background-color: #eef2f7 !important; border: 1px solid #444 !important; color: #000 !important; padding: 12px; }
         .badge-high { background-color: #ef4444; }
         .badge-medium { background-color: #f59e0b; }
