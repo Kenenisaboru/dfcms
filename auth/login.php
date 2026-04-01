@@ -16,6 +16,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if (empty($email) || empty($password)) {
         $error = "Please fill in all fields.";
+    } elseif (!$pdo) {
+        $error = "Database connection failed. Please check config/database.php.";
     } else {
         $stmt = $pdo->prepare("SELECT id, full_name, password, role FROM users WHERE email = ?");
         $stmt->execute([$email]);
