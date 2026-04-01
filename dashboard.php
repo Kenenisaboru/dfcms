@@ -12,6 +12,16 @@ $role = $_SESSION['role'];
 $userId = $_SESSION['user_id'];
 $userName = $_SESSION['full_name'];
 
+// Global Error Handler for DB
+if (!$pdo) {
+    die("<div style='background:#121212;color:#ff4d4d;padding:50px;text-align:center;font-family:sans-serif;'>
+            <h2>DATABASE CONNECTION ERROR</h2>
+            <p>The dashboard cannot load because the database is not connecting.</p>
+            <p>Please check <b>config/database.php</b> and ensure your password is correct.</p>
+            <a href='auth/logout.php' style='color:#fff;text-decoration:underline;'>Logout and try again</a>
+         </div>");
+}
+
 // Fetch stats based on role
 $totalComplaints = 0;
 if ($role == 'student') {
@@ -41,6 +51,8 @@ if ($role == 'student') {
         .main-content { margin-left: 250px; padding: 30px; width: calc(100% - 250px); }
         .card-custom { background-color: #1e1e1e; border: 1px solid #333; border-radius: 10px; }
         .text-accent { color: #10b981; }
+        .text-muted { color: #cfcfcf !important; } /* brighter muted for dark mode */
+        h4, h5 { color: #fff; }
     </style>
 </head>
 <body>
