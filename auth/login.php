@@ -82,22 +82,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             padding: 40px;
             border-left: 1px solid #333;
         }
-        .card {
-            background-color: transparent;
-            border: none;
-            width: 100%;
-            max-width: 420px;
-        }
+        .card h2 { color: #ffffff !important; }
+        .text-muted { color: #cfcfcf !important; }
         .form-control { 
-            background-color: #1e1e1e; 
+            background-color: #eef2f7 !important; 
             border: 1px solid #444; 
-            color: #fff; 
+            color: #000 !important; 
             padding: 12px;
             border-radius: 8px;
         }
+        .form-control::placeholder { color: #555 !important; }
         .form-control:focus { 
-            background-color: #252525; 
-            color: #fff; 
+            background-color: #ffffff !important; 
+            color: #000; 
             border-color: #3b82f6; 
             box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25); 
         }
