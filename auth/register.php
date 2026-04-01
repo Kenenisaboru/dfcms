@@ -25,6 +25,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "Invalid email format.";
     } elseif (!in_array($role, $allowedRoles)) {
         $error = "Invalid role selected.";
+    } elseif (!$pdo) {
+        $error = "DATABASE CONNECTION FAILED. Please double-check your password in config/database.php.";
     } else {
         $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->execute([$email]);
