@@ -91,13 +91,118 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #0c0d0e; color: #fff; font-family: 'Inter', sans-serif; }
-        .navbar-custom { background-color: #121212; border-bottom: 1px solid #333; }
-        .card-custom { background-color: #121212; border: 1px solid #333; border-radius: 12px; margin-top: 30px; padding: 40px; }
-        .form-control, .form-select { background-color: #eef2f7 !important; border: 1px solid #444 !important; color: #000 !important; padding: 12px; }
-        .text-accent { color: #10b981; }
-        .btn-submit { background-color: #10b981; border: none; padding: 15px; font-weight: 800; color: #000; letter-spacing: 1px; }
-        .btn-submit:hover { background-color: #059669; transform: translateY(-2px); }
+        :root {
+            --primary: #10b981;
+            --primary-glow: rgba(16, 185, 129, 0.4);
+            --bg-dark: #0c0d0e;
+            --card-bg: rgba(18, 18, 18, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+            --input-bg: #eef2f7;
+        }
+
+        body { 
+            background-color: var(--bg-dark); 
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
+            color: var(--text-light); 
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar-custom { 
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border); 
+            padding: 1rem 2rem;
+        }
+
+        .card-custom { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); 
+            border-radius: 20px; 
+            margin-top: 30px; 
+            padding: 40px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-label { 
+            color: var(--text-light) !important; 
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .text-muted-custom {
+            color: var(--text-dim) !important;
+        }
+
+        .form-control, .form-select { 
+            background-color: var(--input-bg) !important; 
+            border: 1px solid var(--glass-border) !important; 
+            color: #1e293b !important; 
+            padding: 12px 16px; 
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 4px var(--primary-glow) !important;
+            border-color: var(--primary) !important;
+        }
+
+        .text-accent { color: var(--primary); }
+        
+        .btn-submit { 
+            background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
+            border: none; 
+            padding: 14px; 
+            font-weight: 700; 
+            color: #fff; 
+            letter-spacing: 1px; 
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+        
+        .btn-submit:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 10px 20px -5px var(--primary-glow);
+            color: #fff;
+        }
+
+        .btn-submit:active {
+            transform: translateY(-1px);
+        }
+
+        .info-box {
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 1rem;
+        }
+
+        .section-header {
+            border-bottom: 2px solid rgba(255,255,255,0.05);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
     </style>
 </head>
 <body>
@@ -109,17 +214,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="container my-5">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <div class="card card-custom shadow-lg">
-                    <h2 class="mb-4 text-white fw-bold">Submit Complaint</h2>
-                    <p class="text-muted mb-4 small">Your complaint will be securely routed according to strict University transparency protocols.</p>
+                <div class="card card-custom">
+                    <div class="section-header">
+                        <h2 class="text-white fw-bold mb-1">Submit Complaint</h2>
+                        <p class="text-muted-custom small">Your complaint will be securely routed according to strict University transparency protocols.</p>
+                    </div>
                     
-                    <?php if ($error): ?><div class="alert alert-danger py-2"><?php echo $error; ?></div><?php endif; ?>
-                    <?php if ($success): ?><div class="alert alert-success py-2"><?php echo $success; ?></div><?php endif; ?>
+                    <?php if ($error): ?><div class="alert alert-danger py-2 border-0 bg-danger bg-opacity-25 text-danger"><?php echo $error; ?></div><?php endif; ?>
+                    <?php if ($success): ?><div class="alert alert-success py-2 border-0 bg-success bg-opacity-25 text-success"><?php echo $success; ?></div><?php endif; ?>
 
                     <form method="POST" enctype="multipart/form-data">
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold text-muted small">Complaint Category</label>
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label"><i class="fas fa-list text-accent"></i> Complaint Category</label>
                                 <select name="category" class="form-select" required>
                                     <option value="">Select Category...</option>
                                     <option value="Academic">Academic</option>
@@ -128,8 +235,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <option value="Other">Other</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold text-muted small">Priority Level</label>
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label"><i class="fas fa-flag text-accent"></i> Priority Level</label>
                                 <select name="priority" class="form-select" required>
                                     <option value="Low">Low Priority</option>
                                     <option value="Medium">Medium Priority</option>
@@ -138,32 +245,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">Route Complaint To:</label>
+                        <div class="mb-4">
+                            <label class="form-label"><i class="fas fa-user-tie text-accent"></i> Route Complaint To:</label>
                             <select name="receiver_id" class="form-select" required>
                                 <option value="">Select Target Handler (CR or Teacher)...</option>
                                 <?php foreach ($receivers as $r): ?>
                                     <option value="<?php echo $r['id']; ?>">
-                                        <?php echo htmlspecialchars($r['full_name']); ?> (<?php echo strtoupper($r['role']); ?>)
+                                         <?php echo htmlspecialchars($r['full_name']); ?> (<?php echo strtoupper($r['role']); ?>)
                                     </option>
                                 <?php endforeach; ?>
                             </select>
-                            <div class="mt-2" style="font-size: 11px; color:#888;">
+                            <div class="info-box">
                                 <i class="fas fa-info-circle me-1"></i> Students are strictly limited to Class Representatives and Teaching Staff.
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-muted small">Description of the Issue</label>
+                        <div class="mb-4">
+                            <label class="form-label"><i class="fas fa-pen-nib text-accent"></i> Description of the Issue</label>
                             <textarea name="message" class="form-control" rows="5" placeholder="Please provide specific details..." required></textarea>
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label fw-bold text-muted small">Evidence Attachment (Optional)</label>
+                            <label class="form-label"><i class="fas fa-paperclip text-accent"></i> Evidence Attachment <span class="text-muted-custom ms-1">(Optional)</span></label>
                             <input type="file" name="attachment" class="form-control" accept=".jpg,.jpeg,.png,.pdf">
+                            <small class="text-muted-custom mt-1 d-block">Accepted: JPG, PNG, PDF (Max 5MB)</small>
                         </div>
 
-                        <button type="submit" class="btn btn-submit w-100 shadow"><i class="fas fa-paper-plane me-2"></i> Initialize Workflow</button>
+                        <button type="submit" class="btn btn-submit w-100 mt-2"><i class="fas fa-paper-plane me-2"></i> Initialize Workflow</button>
                     </form>
                 </div>
             </div>
