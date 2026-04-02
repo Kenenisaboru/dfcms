@@ -28,14 +28,94 @@ $complaints = $stmt->fetchAll();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #121212; color: #fff; }
-        .navbar-custom { background-color: #1e1e1e; border-bottom: 1px solid #333; }
-        .card-custom { background-color: #1e1e1e; border: 1px solid #333; border-radius: 10px; margin-top: 30px; padding: 30px; }
-        .table-dark { --bs-table-bg: #1e1e1e; }
-        .badge-pending { background-color: #f59e0b; }
-        .badge-resolved { background-color: #10b981; }
-        .badge-rejected { background-color: #ef4444; }
-        .badge-progress { background-color: #3b82f6; }
+        :root {
+            --primary: #10b981;
+            --primary-glow: rgba(16, 185, 129, 0.4);
+            --bg-dark: #0c0d0e;
+            --card-bg: rgba(18, 18, 18, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        body { 
+            background-color: var(--bg-dark); 
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
+            color: var(--text-light); 
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar-custom { 
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border); 
+            padding: 1rem 2rem;
+        }
+
+        .card-custom { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); 
+            border-radius: 20px; 
+            padding: 40px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .table-custom {
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-light);
+            --bs-table-border-color: var(--glass-border);
+            margin-bottom: 0;
+        }
+
+        .table-custom thead th {
+            border-top: none;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            padding: 1.5rem 1rem;
+        }
+
+        .table-custom tbody td {
+            vertical-align: middle;
+            padding: 1.25rem 1rem;
+            border-bottom-color: var(--glass-border);
+        }
+
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-pending { background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-resolved { background-color: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-rejected { background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .badge-progress { background-color: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+
+        .btn-view {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            transition: all 0.2s ease;
+        }
+        .btn-view:hover {
+            background: var(--primary);
+            color: #000;
+        }
     </style>
 </head>
 <body>
@@ -47,11 +127,14 @@ $complaints = $stmt->fetchAll();
     </nav>
 
     <div class="container my-5">
-        <h3 class="mb-4"><i class="fas fa-search me-2 text-success"></i> Track Your Status</h3>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold"><i class="fas fa-search me-2 text-success"></i> Track Your Status</h3>
+            <span class="text-dim small">Total Complaints: <?php echo count($complaints); ?></span>
+        </div>
         
         <div class="card card-custom">
             <div class="table-responsive">
-                <table class="table table-dark table-hover">
+                <table class="table table-custom table-hover">
                     <thead>
                         <tr>
                             <th>Complaint ID</th>
@@ -59,18 +142,28 @@ $complaints = $stmt->fetchAll();
                             <th>Current Handler</th>
                             <th>Status</th>
                             <th>Last Update</th>
-                            <th>Action</th>
+                            <th class="text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (count($complaints) > 0): ?>
                             <?php foreach ($complaints as $c): ?>
                                 <tr>
-                                    <td>#<?php echo $c['id']; ?></td>
-                                    <td><?php echo htmlspecialchars($c['category']); ?></td>
-                                    <td><?php echo $c['handler_name'] ? htmlspecialchars($c['handler_name']) : '<span class="text-muted">Unassigned</span>'; ?></td>
+                                    <td class="fw-bold text-accent">#<?php echo $c['id']; ?></td>
                                     <td>
-                                        <span class="badge <?php 
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-folder-open me-2 text-dim"></i>
+                                            <?php echo htmlspecialchars($c['category']); ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-user-circle me-2 text-dim"></i>
+                                            <?php echo $c['handler_name'] ? htmlspecialchars($c['handler_name']) : '<span class="text-dim small italic">Unassigned</span>'; ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge-status <?php 
                                             echo match($c['status']) {
                                                 'Pending' => 'badge-pending',
                                                 'In-Progress' => 'badge-progress',
@@ -80,15 +173,26 @@ $complaints = $stmt->fetchAll();
                                             };
                                         ?>"><?php echo $c['status']; ?></span>
                                     </td>
-                                    <td><?php echo date('M d, Y', strtotime($c['updated_at'])); ?></td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-success" onclick="alert('Viewing historical details is being finalized.')">View Log</button>
+                                        <div class="text-dim small">
+                                            <i class="far fa-calendar-alt me-1"></i>
+                                            <?php echo date('M d, Y', strtotime($c['updated_at'])); ?>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-view rounded-pill px-3" onclick="alert('Viewing historical details is being finalized.')">
+                                            <i class="fas fa-history me-1"></i> View Log
+                                        </button>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="6" class="text-center text-muted p-4">You haven't submitted any complaints yet.</td>
+                                <td colspan="6" class="text-center text-dim py-5">
+                                    <i class="fas fa-clipboard-list fa-3x mb-3 opacity-25"></i>
+                                    <p>You haven't submitted any complaints yet.</p>
+                                    <a href="submit_complaint.php" class="btn btn-success btn-sm mt-2 rounded-pill px-4">Submit First Complaint</a>
+                                </td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
