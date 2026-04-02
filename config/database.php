@@ -3,7 +3,7 @@
 $host = '127.0.0.1';
 $db = 'dfcms';
 $user = 'root';
-$pass = '';
+$pass = '12345';
 
 $dsn = "mysql:host=$host;port=3309;dbname=$db;charset=utf8mb4";
 $options = [
