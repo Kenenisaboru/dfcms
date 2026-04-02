@@ -22,8 +22,6 @@ $stmt = $pdo->query("SELECT c.*, s.full_name as student_name, h.full_name as han
                     LEFT JOIN users h ON c.assigned_to = h.id 
                     ORDER BY c.created_at DESC LIMIT 50");
 $complaints = $stmt->fetchAll();
-
-// Fetch Recent Audit History Logs
 $stmtHist = $pdo->query("SELECT h.*, u.full_name as actor_name, u.role as actor_role 
                         FROM complaint_history h 
                         JOIN users u ON h.action_by = u.id 
