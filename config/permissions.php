@@ -7,7 +7,7 @@ class AccessManager {
      */
     private static $rules = [
         'student'        => ['cr', 'teacher'],
-        'cr'             => ['teacher', 'hod'],
+        'cr'             => ['teacher', 'hod', 'lab_assistant'],
         'teacher'        => ['student', 'teacher', 'cr', 'hod', 'lab_assistant'],
         'hod'            => ['teacher', 'lab_assistant', 'cr'],
         'lab_assistant'  => ['teacher', 'hod']
