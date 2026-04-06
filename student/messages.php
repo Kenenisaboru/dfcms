@@ -12,53 +12,48 @@ if (!isset($_SESSION['user_id'])) {
 $userId = $_SESSION['user_id'];
 $role = $_SESSION['role'];
 
-// Only allow students and CRs
-if (!in_array($role, ['student', 'cr'])) {
+// Allow any logged-in user
+if (!isset($role)) {
     die("Access Denied");
 }
+
 
 $notificationService = new NotificationService();
 
 // Handle message sending
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'send_message') {
-        $studentId = $_POST['student_id'];
-        $crId = $_POST['cr_id'];
+        $receiverId = $_POST['receiver_id'];
         $subject = $_POST['subject'];
         $message = $_POST['message'];
         
-        if ($role === 'cr') {
-            $notificationService->createCRStudentMessage($crId, $studentId, $subject, $message);
-        }
+        $notificationService->createMessage($userId, $receiverId, $subject, $message);
         
-        header("Location: messages.php?success=1");
+        header("Location: messages.php?receiver_id=" . $receiverId . "&success=1");
         exit;
     }
 }
 
-// Get messages
-$messages = array();
-$students = array();
-$crs = array();
 
-if ($role === 'cr') {
-    $students = $notificationService->getCRAssignedStudents($userId);
-    
-    if (isset($_GET['student_id'])) {
-        $studentId = $_GET['student_id'];
-        $messages = $notificationService->getCRStudentConversation($userId, $studentId);
-    }
-} elseif ($role === 'student') {
-    // Get CR for this student (simplified - in real app, you'd have proper assignment)
-    $stmt = $pdo->prepare("SELECT id, full_name FROM users WHERE role = 'cr' LIMIT 1");
+// Get contacts based on role
+$contacts = array();
+if ($role === 'student') {
+    // Students see CRs and Teachers they've interacted with (or just all for simplicity here)
+    $stmt = $pdo->prepare("SELECT id, full_name, role FROM users WHERE role IN ('cr', 'teacher')");
     $stmt->execute();
-    $crs = $stmt->fetchAll();
-    
-    if (!empty($crs) && isset($_GET['cr_id'])) {
-        $crId = $_GET['cr_id'];
-        $messages = $notificationService->getCRStudentConversation($crId, $userId);
-    }
+    $contacts = $stmt->fetchAll();
+} else {
+    // Others (CR, Teacher, HOD) see all students (or assigned ones)
+    $stmt = $pdo->prepare("SELECT id, full_name, 'student' as role FROM users WHERE role = 'student'");
+    $stmt->execute();
+    $contacts = $stmt->fetchAll();
 }
+
+if (isset($_GET['receiver_id'])) {
+    $receiverId = $_GET['receiver_id'];
+    $messages = $notificationService->getConversation($userId, $receiverId);
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -116,64 +111,41 @@ if ($role === 'cr') {
         <div class="row">
             <!-- Contact List -->
             <div class="col-md-4">
-                <div class="card p-4">
-                    <h5 class="mb-3">
-                        <?php echo $role === 'cr' ? 'Students' : 'Class Representatives'; ?>
-                    </h5>
+                    <h5 class="mb-3">Recent Contacts</h5>
                     <div class="conversation-list">
-                        <?php if ($role === 'cr'): ?>
-                            <?php foreach ($students as $student): ?>
-                                <a href="?student_id=<?php echo $student['id']; ?>" 
-                                   class="list-group-item list-group-item-action bg-transparent text-light border-secondary mb-2 <?php echo isset($_GET['student_id']) && $_GET['student_id'] == $student['id'] ? 'active' : ''; ?>">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="mb-1"><?php echo htmlspecialchars($student['full_name']); ?></h6>
-                                            <small class="text-muted"><?php echo $student['complaint_count']; ?> complaints</small>
-                                        </div>
-                                        <i class="fas fa-chevron-right text-secondary"></i>
+                        <?php foreach ($contacts as $contact): ?>
+                            <a href="?receiver_id=<?php echo $contact['id']; ?>" 
+                               class="list-group-item list-group-item-action bg-transparent text-light border-secondary mb-2 <?php echo isset($_GET['receiver_id']) && $_GET['receiver_id'] == $contact['id'] ? 'active' : ''; ?>">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1"><?php echo htmlspecialchars($contact['full_name']); ?></h6>
+                                        <small class="text-muted opacity-75"><?php echo strtoupper($contact['role']); ?></small>
                                     </div>
-                                </a>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <?php foreach ($crs as $cr): ?>
-                                <a href="?cr_id=<?php echo $cr['id']; ?>" 
-                                   class="list-group-item list-group-item-action bg-transparent text-light border-secondary mb-2 <?php echo isset($_GET['cr_id']) && $_GET['cr_id'] == $cr['id'] ? 'active' : ''; ?>">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <h6 class="mb-1"><?php echo htmlspecialchars($cr['full_name']); ?></h6>
-                                            <small class="text-muted">Class Representative</small>
-                                        </div>
-                                        <i class="fas fa-chevron-right text-secondary"></i>
-                                    </div>
-                                </a>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
+                                    <i class="fas fa-chevron-right text-secondary small"></i>
+                                </div>
+                            </a>
+                        <?php endforeach; ?>
                     </div>
-                </div>
+
             </div>
 
             <!-- Conversation -->
             <div class="col-md-8">
-                <?php if (($role === 'cr' && isset($_GET['student_id'])) || ($role === 'student' && isset($_GET['cr_id']))): ?>
+                <?php if (isset($_GET['receiver_id'])): ?>
                     <div class="card h-100">
                         <div class="card-header border-bottom border-secondary">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
                                     <?php 
-                                    if ($role === 'cr') {
-                                        $student = array_filter($students, fn($s) => $s['id'] == $_GET['student_id']);
-                                        $student = reset($student);
-                                        echo htmlspecialchars($student['full_name']);
-                                    } else {
-                                        $cr = array_filter($crs, fn($c) => $c['id'] == $_GET['cr_id']);
-                                        $cr = reset($cr);
-                                        echo htmlspecialchars($cr['full_name']);
-                                    }
+                                        $target = array_filter($contacts, fn($c) => $c['id'] == $_GET['receiver_id']);
+                                        $target = reset($target);
+                                        echo htmlspecialchars($target['full_name'] ?? 'Conversation');
                                     ?>
                                 </h5>
-                                <small class="text-muted">Direct Message</small>
+                                <small class="text-muted"><i class="fas fa-circle text-success me-1 small"></i> Secure Channel</small>
                             </div>
                         </div>
+
                         
                         <div class="card-body p-4" style="min-height: 400px; max-height: 500px; overflow-y: auto;">
                             <?php if (empty($messages)): ?>
@@ -192,39 +164,36 @@ if ($role === 'cr') {
                             <?php endif; ?>
                         </div>
 
-                        <?php if ($role === 'cr'): ?>
-                            <div class="message-form">
-                                <form method="POST">
-                                    <input type="hidden" name="action" value="send_message">
-                                    <input type="hidden" name="cr_id" value="<?php echo $userId; ?>">
-                                    <input type="hidden" name="student_id" value="<?php echo $_GET['student_id']; ?>">
-                                    <div class="input-group">
+                        <div class="message-form">
+                            <form method="POST">
+                                <input type="hidden" name="action" value="send_message">
+                                <input type="hidden" name="receiver_id" value="<?php echo $_GET['receiver_id']; ?>">
+                                <div class="row g-2">
+                                    <div class="col-12 mb-2">
                                         <input type="text" name="subject" class="form-control" placeholder="Subject" required>
-                                        <input type="text" name="message" class="form-control" placeholder="Type your message..." required>
-                                        <button class="btn btn-success" type="submit">
-                                            <i class="fas fa-paper-plane"></i> Send
+                                    </div>
+                                    <div class="col">
+                                        <textarea name="message" class="form-control" rows="1" placeholder="Type your message..." required></textarea>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button class="btn btn-success h-100 px-4" type="submit">
+                                            <i class="fas fa-paper-plane"></i>
                                         </button>
                                     </div>
-                                </form>
-                            </div>
-                        <?php else: ?>
-                            <div class="message-form">
-                                <div class="text-center text-muted">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    Only Class Representatives can initiate messages. Wait for your CR to contact you.
                                 </div>
-                            </div>
-                        <?php endif; ?>
+                            </form>
+                        </div>
                     </div>
                 <?php else: ?>
                     <div class="card h-100">
                         <div class="card-body text-center text-muted py-5">
-                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <i class="fas fa-comments fa-3x mb-3 opacity-25"></i>
                             <h5>Select a conversation</h5>
-                            <p>Choose a <?php echo $role === 'cr' ? 'student' : 'Class Representative'; ?> from the list to start messaging.</p>
+                            <p>Choose a contact from the list on the left to start messaging.</p>
                         </div>
                     </div>
                 <?php endif; ?>
+
             </div>
         </div>
     </div>
