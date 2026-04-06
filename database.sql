@@ -44,9 +44,28 @@ CREATE TABLE `complaint_history` (
 CREATE TABLE `notifications` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
-  `message` varchar(255) NOT NULL,
+  `type` varchar(50) DEFAULT 'general',
+  `title` varchar(100) DEFAULT NULL,
+  `message` text NOT NULL,
+  `data` text DEFAULT NULL,
   `is_read` tinyint(1) DEFAULT 0,
+  `read_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `messages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sender_id` int(11) NOT NULL,
+  `receiver_id` int(11) NOT NULL,
+  `subject` varchar(255) DEFAULT NULL,
+  `message` text NOT NULL,
+  `complaint_id` int(11) DEFAULT NULL,
+  `is_read` tinyint(1) DEFAULT 0,
+  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`sender_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`receiver_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`complaint_id`) REFERENCES `complaints`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
