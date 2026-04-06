@@ -140,3 +140,115 @@ body.light-mode .nav-link {
     clip: rect(0, 0, 0, 0);
     border: 0;
 }
+
+/* --- Responsive Sidebar & Mobile Optimizations --- */
+
+/* Hamburger Menu Button */
+.menu-toggle {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1100;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 10px;
+    background: var(--card-bg-dark);
+    border: 1px solid var(--border-dark);
+    backdrop-filter: blur(10px);
+    color: var(--primary);
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+body.light-mode .menu-toggle {
+    background: var(--card-bg-light);
+    border: 1px solid var(--border-light);
+    color: var(--primary);
+}
+
+/* Sidebar Responsive Logic */
+@media (max-width: 991.98px) {
+    .menu-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .sidebar {
+        transform: translateX(-100%);
+        z-index: 1050;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 260px !important;
+        box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 80px 20px 40px 20px !important;
+    }
+
+    /* Sidebar Overlay when active */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px);
+        z-index: 1040;
+    }
+
+    .sidebar-overlay.show {
+        display: block;
+    }
+}
+
+/* Quick Access Grid for Mobile */
+@media (max-width: 575.98px) {
+    .quick-access-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .quick-access-item {
+        background: var(--card-bg-dark);
+        border: 1px solid var(--border-dark);
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        text-decoration: none;
+        color: var(--text-dark);
+        transition: var(--transition);
+    }
+
+    body.light-mode .quick-access-item {
+        background: var(--card-bg-light);
+        border: 1px solid var(--border-light);
+        color: var(--text-light);
+    }
+
+    .quick-access-item i {
+        font-size: 1.5rem;
+        color: var(--primary);
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .quick-access-item span {
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: block;
+    }
+}
+
