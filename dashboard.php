@@ -187,7 +187,16 @@ if ($role == 'student') {
     </style>
 </head>
 <body>
-    <div class="sidebar">
+    <!-- Mobile Navigation Toggle -->
+    <button class="menu-toggle" id="sidebarToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="sidebar" id="sidebar">
+
         <h4 class="text-accent"><i class="fas fa-university"></i> DFCMS</h4>
         <a href="dashboard.php" class="active"><i class="fas fa-home"></i> Dashboard</a>
         
@@ -215,6 +224,28 @@ if ($role == 'student') {
         <a href="auth/logout.php" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 
+    <!-- Sidebar JS Logic for Mobile -->
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('show');
+            });
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('show');
+            });
+        }
+    </script>
+
+
     <div class="main-content">
         <div class="mb-5">
             <h2 class="fw-bold">Welcome, <?php echo htmlspecialchars($userName); ?></h2>
@@ -241,7 +272,31 @@ if ($role == 'student') {
             </div>
         </div>
 
+        <!-- Engagement Section: Mobile Quick Access Grid -->
+        <div class="d-sm-none">
+            <h5 class="fw-bold mb-3 mt-4">Quick Shortcuts</h5>
+            <div class="quick-access-grid">
+                <a href="student/notifications.php" class="quick-access-item">
+                    <i class="fas fa-bell"></i>
+                    <span>Alerts</span>
+                </a>
+                <a href="student/messages.php" class="quick-access-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>Inbox</span>
+                </a>
+                <a href="student/badges.php" class="quick-access-item">
+                    <i class="fas fa-medal"></i>
+                    <span>Badges</span>
+                </a>
+                <a href="student/knowledge_base.php" class="quick-access-item">
+                    <i class="fas fa-book"></i>
+                    <span>Guides</span>
+                </a>
+            </div>
+        </div>
+
         <!-- Engagement Section: Badges & Knowledge Base -->
+
         <div class="row g-4 mb-4">
             <div class="col-md-6">
                 <div class="card p-4 h-100">
