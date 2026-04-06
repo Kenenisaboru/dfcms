@@ -1,0 +1,39 @@
+DFCMS - New Complaint Notification
+=====================================
+
+Dear {recipient_name},
+
+A new complaint has been submitted to the Digital Feedback & Complaint Management System.
+
+COMPLAINT DETAILS
+-----------------
+Complaint ID: #{complaint_id}
+Submitted by: {student_name} ({student_email})
+Category: {category}
+Priority: {priority}
+Submitted on: {submission_date}
+
+MESSAGE:
+{message}
+
+{if attachment}
+Attachment: {attachment_link}
+{endif}
+
+ACTION REQUIRED
+---------------
+Please log in to your dashboard to review this complaint and take appropriate action:
+{dashboard_link}
+
+NEXT STEPS
+----------
+1. Review the complaint details
+2. Assess the priority and urgency
+3. Assign to appropriate personnel if needed
+4. Update the complaint status
+
+This is an automated notification. Please do not reply to this email.
+
+---
+© 2026 University Intelligence Division. All rights reserved.
+DFCMS - Digital Feedback & Complaint Management System

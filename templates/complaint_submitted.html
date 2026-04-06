@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Complaint - DFCMS</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .complaint-info {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #10b981;
+        }
+        .priority-high { border-left-color: #ef4444; }
+        .priority-medium { border-left-color: #f59e0b; }
+        .priority-low { border-left-color: #22c55e; }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #10b981;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-university"></i> DFCMS</h1>
+        <h2>New Complaint Received</h2>
+    </div>
+    
+    <div class="content">
+        <p>Dear {recipient_name},</p>
+        
+        <p>A new complaint has been submitted to the Digital Feedback & Complaint Management System. Please review the details below and take appropriate action.</p>
+        
+        <div class="complaint-info priority-{priority}">
+            <h3>Complaint Details</h3>
+            <p><strong>Complaint ID:</strong> #{complaint_id}</p>
+            <p><strong>Submitted by:</strong> {student_name} ({student_email})</p>
+            <p><strong>Category:</strong> {category}</p>
+            <p><strong>Priority:</strong> {priority}</p>
+            <p><strong>Submitted on:</strong> {submission_date}</p>
+            
+            <h4>Message:</h4>
+            <p>{message}</p>
+            
+            {if attachment}
+            <p><strong>Attachment:</strong> <a href="{attachment_link}">View Attachment</a></p>
+            {endif}
+        </div>
+        
+        <div style="text-align: center;">
+            <a href="{dashboard_link}" class="btn">
+                <i class="fas fa-tachometer-alt"></i> View in Dashboard
+            </a>
+        </div>
+        
+        <p><strong>Next Steps:</strong></p>
+        <ul>
+            <li>Review the complaint details</li>
+            <li>Assess the priority and urgency</li>
+            <li>Assign to appropriate personnel if needed</li>
+            <li>Update the complaint status</li>
+        </ul>
+        
+        <p>This is an automated notification. Please do not reply to this email.</p>
+    </div>
+    
+    <div class="footer">
+        <p>&copy; 2026 University Intelligence Division. All rights reserved.</p>
+        <p>DFCMS - Digital Feedback & Complaint Management System</p>
+    </div>
+</body>
+</html>
