@@ -226,18 +226,211 @@ if (isset($_SESSION['user_id'])) {
             margin: 0;
         }
 
+        /* Additional Sections Styling */
+        .section-padding { padding: 80px 0; }
+        .bg-gradient-dark { 
+            background: linear-gradient(135deg, #0c0d0e 0%, #1a1a1a 100%);
+            position: relative;
+        }
+        .bg-gradient-dark::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(16, 185, 129, 0.03) 0%, transparent 70%);
+        }
+
+        .section-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            max-width: 600px;
+            margin: 0 auto 60px;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #059669);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .feature-item:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .feature-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 25px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #10b981;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 15px;
+        }
+
+        .feature-description {
+            color: #a0a0a0;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin: 60px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #a0a0a0;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .contact-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .contact-form {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 50px;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-label {
+            color: #ffffff;
+            font-weight: 500;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #ffffff;
+            padding: 15px 20px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            color: #ffffff;
+        }
+
+        .form-control::placeholder {
+            color: #666;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #000000;
+            border: none;
+            border-radius: 10px;
+            padding: 15px 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+        }
+
         @media (max-width: 1024px) {
             .section-visual { display: none; }
             .section-portal { flex: 1; padding: 40px; }
             .main-header { padding: 15px 30px; }
             .main-header .logo { font-size: 1.5rem; }
             .main-header .nav-links a { margin-left: 20px; }
+            .section-title { font-size: 2.5rem; }
+            .feature-grid { grid-template-columns: 1fr; gap: 20px; }
         }
 
         @media (max-width: 768px) {
             .main-header { padding: 15px 20px; }
             .main-header .logo { font-size: 1.3rem; }
             .main-header .nav-links { display: none; }
+            .section-title { font-size: 2rem; }
+            .contact-form { padding: 30px 20px; }
         }
     </style>
 </head>
@@ -309,5 +502,189 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </div>
     </div>
+
+    <!-- Features Section -->
+    <section id="features" class="section-padding bg-gradient-dark">
+        <div class="container">
+            <h2 class="section-title text-center">Platform Features</h2>
+            <p class="section-subtitle text-center">Discover the powerful capabilities that make DFCMS the ultimate solution for institutional feedback management</p>
+            
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Secure End-to-End</h3>
+                    <p class="feature-description">Advanced encryption and role-based access ensure your feedback remains confidential while reaching the right decision-makers instantly.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="feature-title">Impact Analytics</h3>
+                    <p class="feature-description">Real-time dashboards and comprehensive reporting transform complaints into actionable insights for institutional improvement.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <h3 class="feature-title">Smart Routing</h3>
+                    <p class="feature-description">Intelligent escalation algorithms automatically direct issues to the appropriate department based on category and priority.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3 class="feature-title">Real-Time Tracking</h3>
+                    <p class="feature-description">Complete audit trails with timestamps ensure transparency and accountability throughout the resolution process.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Mobile Optimized</h3>
+                    <p class="feature-description">Fully responsive design enables seamless access from any device, ensuring feedback submission anytime, anywhere.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3 class="feature-title">Instant Notifications</h3>
+                    <p class="feature-description">Automated alerts keep all stakeholders informed about complaint status updates and resolution progress.</p>
+                </div>
+            </div>
+            
+            <!-- Stats Section -->
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">98%</div>
+                    <div class="stat-label">Resolution Rate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24h</div>
+                    <div class="stat-label">Avg Response Time</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">5000+</div>
+                    <div class="stat-label">Issues Resolved</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">4.8★</div>
+                    <div class="stat-label">User Satisfaction</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section-padding">
+        <div class="container">
+            <h2 class="section-title text-center">About DFCMS</h2>
+            <p class="section-subtitle text-center">Transforming institutional communication through innovative technology and community-driven solutions</p>
+            
+            <div class="row">
+                <div class="col-lg-6 mb-4">
+                    <div class="feature-item h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="feature-title">Community First</h3>
+                        <p class="feature-description">Built on the principle that every voice matters. DFCMS creates an inclusive environment where students, faculty, and staff collaborate to build a better educational experience.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 mb-4">
+                    <div class="feature-item h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h3 class="feature-title">Innovation Driven</h3>
+                        <p class="feature-description">Leveraging cutting-edge technology to streamline feedback processes, reduce resolution times, and provide actionable insights for continuous institutional improvement.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 mb-4">
+                    <div class="feature-item h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h3 class="feature-title">Trust & Transparency</h3>
+                        <p class="feature-description">Committed to upholding the highest standards of integrity with complete audit trails, transparent processes, and fair resolution mechanisms.</p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 mb-4">
+                    <div class="feature-item h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <h3 class="feature-title">Excellence Standard</h3>
+                        <p class="feature-description">Setting the benchmark for institutional feedback management with proven methodologies, continuous improvement, and exceptional user experiences.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section-padding bg-gradient-dark">
+        <div class="container">
+            <h2 class="section-title text-center">Get In Touch</h2>
+            <p class="section-subtitle text-center">Have questions or need support? Our team is here to help you make the most of DFCMS</p>
+            
+            <div class="contact-container">
+                <form class="contact-form">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control" placeholder="Enter your name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" class="form-control" placeholder="your.email@university.edu" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        <select class="form-control">
+                            <option value="">Select your department</option>
+                            <option value="student">Student</option>
+                            <option value="cr">Class Representative</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="lab_assistant">Lab Assistant</option>
+                            <option value="hod">Head of Department</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" rows="5" placeholder="Tell us how we can help you..." required></textarea>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn-submit">Send Message</button>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-5">
+                    <p class="feature-description">
+                        <i class="fas fa-envelope me-2"></i>support@dfcms.university.edu | 
+                        <i class="fas fa-phone me-2 ms-3"></i>+1 (555) 123-4567 | 
+                        <i class="fas fa-map-marker-alt me-2 ms-3"></i>Admin Building, Room 201
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
 </body>
 </html>
