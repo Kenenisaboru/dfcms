@@ -15,9 +15,13 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #0c0d0e; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; height: 100vh; margin: 0; }
+        body { background-color: #0c0d0e; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; }
+        
+        html {
+            scroll-behavior: smooth;
+        }
         .main-header {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -25,8 +29,8 @@ if (isset($_SESSION['user_id'])) {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 10;
-            background: rgba(12, 13, 14, 0.8);
+            z-index: 1000;
+            background: rgba(12, 13, 14, 0.95);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -98,7 +102,14 @@ if (isset($_SESSION['user_id'])) {
             color: #000000;
         }
 
-        .master-layout { display: flex; height: 100vh; width: 100%; transition: 0.5s; }
+        .master-layout { 
+            display: flex; 
+            height: 100vh; 
+            width: 100%; 
+            transition: 0.5s;
+            min-height: 100vh;
+            margin-top: 80px;
+        }
         
         /* Left Section: Visual Impact & Motivation */
         .section-visual {
@@ -415,6 +426,121 @@ if (isset($_SESSION['user_id'])) {
             box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
         }
 
+        /* Footer Styling */
+        .main-footer {
+            background: linear-gradient(135deg, #0a0a0a 0%, #121212 100%);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 60px 0 30px;
+            position: relative;
+        }
+
+        .main-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h4 {
+            color: #10b981;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .footer-section p, .footer-section li {
+            color: #a0a0a0;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-section ul li a {
+            color: #a0a0a0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section ul li a:hover {
+            color: #10b981;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .footer-logo i {
+            color: #10b981;
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+
+        .footer-logo span {
+            color: #ffffff;
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .footer-logo span strong {
+            color: #10b981;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a0a0a0;
+            transition: all 0.3s ease;
+        }
+
+        .social-links a:hover {
+            background: #10b981;
+            color: #000000;
+            transform: translateY(-3px);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 30px;
+            text-align: center;
+        }
+
+        .footer-bottom p {
+            color: #666;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
         @media (max-width: 1024px) {
             .section-visual { display: none; }
             .section-portal { flex: 1; padding: 40px; }
@@ -431,6 +557,8 @@ if (isset($_SESSION['user_id'])) {
             .main-header .nav-links { display: none; }
             .section-title { font-size: 2rem; }
             .contact-form { padding: 30px 20px; }
+            .footer-content { grid-template-columns: 1fr; gap: 30px; }
+            .main-footer { padding: 40px 0 20px; }
         }
     </style>
 </head>
@@ -686,5 +814,60 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </div>
     </section>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-university"></i>
+                        <span>DFCMS<strong>.</strong></span>
+                    </div>
+                    <p>Digital Feedback & Complaint Management System - Transforming institutional communication through innovative technology and community-driven solutions.</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#features">Platform Features</a></li>
+                        <li><a href="#about">About DFCMS</a></li>
+                        <li><a href="#contact">Contact Support</a></li>
+                        <li><a href="auth/login.php">Login</a></li>
+                        <li><a href="auth/register.php">Register</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">User Guide</a></li>
+                        <li><a href="#">System Documentation</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <p><i class="fas fa-envelope me-2"></i>support@dfcms.university.edu</p>
+                    <p><i class="fas fa-phone me-2"></i>+1 (555) 123-4567</p>
+                    <p><i class="fas fa-map-marker-alt me-2"></i>Admin Building, Room 201</p>
+                    <p><i class="fas fa-clock me-2"></i>Mon-Fri: 9:00 AM - 5:00 PM</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2026 University Intelligence Division. All rights reserved. | Powered by DFCMS Engineering Core</p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
