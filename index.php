@@ -16,6 +16,88 @@ if (isset($_SESSION['user_id'])) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         body { background-color: #0c0d0e; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; height: 100vh; margin: 0; }
+        .main-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            background: rgba(12, 13, 14, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .main-header .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #ffffff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .main-header .logo i {
+            color: #10b981;
+            margin-right: 12px;
+            font-size: 1.5rem;
+        }
+
+        .main-header .logo span {
+            color: #10b981;
+        }
+
+        .main-header .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .main-header .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            margin-left: 30px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .main-header .nav-links a:hover {
+            color: #10b981;
+        }
+
+        .main-header .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #10b981;
+            transition: width 0.3s ease;
+        }
+
+        .main-header .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .header-btn-login {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #000000;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .header-btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+            color: #000000;
+        }
+
         .master-layout { display: flex; height: 100vh; width: 100%; transition: 0.5s; }
         
         /* Left Section: Visual Impact & Motivation */
@@ -35,12 +117,23 @@ if (isset($_SESSION['user_id'])) {
         /* Right Section: Core Interaction Portal */
         .section-portal {
             flex: 0.7;
-            background: #121212;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
             display: flex;
             flex-direction: column;
             justify-content: center;
             padding: 60px;
-            border-left: 1px solid #222;
+            border-left: 1px solid rgba(16, 185, 129, 0.2);
+            position: relative;
+        }
+        .section-portal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+            pointer-events: none;
         }
 
         .text-accent { color: #10b981; }
@@ -79,17 +172,91 @@ if (isset($_SESSION['user_id'])) {
         .btn-reg { background-color: transparent; border: 1px solid #444; color: #fff; }
         .btn-reg:hover { background-color: #333; color: #fff; transform: translateY(-3px); }
 
-        .portal-header { margin-bottom: 50px; }
-        .portal-header h2 { font-weight: 800; font-size: 2.2rem; }
-        .portal-header p { color: #666; font-size: 1rem; }
+        .portal-header { margin-bottom: 50px; position: relative; z-index: 1; }
+        .portal-header h2 { font-weight: 800; font-size: 2.2rem; color: #ffffff; margin-bottom: 15px; }
+        .portal-header p { color: #a0a0a0; font-size: 1rem; line-height: 1.5; }
+
+        .actions { position: relative; z-index: 1; margin-bottom: 40px; }
+        
+        .guidelines-section {
+            position: relative; 
+            z-index: 1; 
+            padding: 25px; 
+            background: rgba(255, 255, 255, 0.02); 
+            border-radius: 12px; 
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            margin-bottom: 30px;
+        }
+        
+        .guidelines-header {
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 15px;
+        }
+        
+        .guidelines-header i { 
+            color: #10b981; 
+            margin-right: 12px; 
+            font-size: 1.1rem;
+        }
+        
+        .guidelines-title { 
+            color: #10b981; 
+            font-weight: 600; 
+            font-size: 0.85rem; 
+            letter-spacing: 1px;
+        }
+        
+        .guidelines-text { 
+            color: #c0c0c0; 
+            font-size: 0.9rem; 
+            line-height: 1.6; 
+            margin: 0;
+        }
+        
+        .copyright {
+            position: relative; 
+            z-index: 1; 
+            text-align: center;
+        }
+        
+        .copyright-text {
+            color: #808080; 
+            font-size: 0.8rem; 
+            margin: 0;
+        }
 
         @media (max-width: 1024px) {
             .section-visual { display: none; }
             .section-portal { flex: 1; padding: 40px; }
+            .main-header { padding: 15px 30px; }
+            .main-header .logo { font-size: 1.5rem; }
+            .main-header .nav-links a { margin-left: 20px; }
+        }
+
+        @media (max-width: 768px) {
+            .main-header { padding: 15px 20px; }
+            .main-header .logo { font-size: 1.3rem; }
+            .main-header .nav-links { display: none; }
         }
     </style>
 </head>
 <body>
+    <!-- Main Header -->
+    <header class="main-header">
+        <a href="index.php" class="logo">
+            <i class="fas fa-university"></i>
+            DFCMS<span>.</span>
+        </a>
+        <nav class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+            <a href="auth/login.php" class="header-btn-login">Login</a>
+            <a href="auth/register.php">Sign Up</a>
+        </nav>
+    </header>
+
     <div class="master-layout">
         <!-- Visual Section -->
         <div class="section-visual">
@@ -127,18 +294,18 @@ if (isset($_SESSION['user_id'])) {
                 <a href="auth/register.php" class="btn-portal btn-reg"><i class="fas fa-user-plus me-2"></i> Register Account</a>
             </div>
 
-            <div class="mt-5 pt-5 border-top border-secondary">
-                <div class="d-flex align-items-center mb-3">
-                    <i class="fas fa-info-circle text-accent me-2"></i>
-                    <span class="small text-muted fw-bold">SYSTEM GUIDELINES</span>
+            <div class="guidelines-section">
+                <div class="guidelines-header">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="guidelines-title">SYSTEM GUIDELINES</span>
                 </div>
-                <p class="small text-muted" style="line-height: 1.8;">
+                <p class="guidelines-text">
                     Members of the Information Science department (Students, CRs, Teachers, and HODs) can utilize this platform for efficient grievance redressal. Automated workflow tracking is active for all accounts.
                 </p>
             </div>
             
-            <div class="mt-auto">
-                <p class="small text-muted text-center mb-0">© 2026 University Intelligence Division. All rights reserved.</p>
+            <div class="copyright">
+                <p class="copyright-text">© 2026 University Intelligence Division. All rights reserved.</p>
             </div>
         </div>
     </div>
