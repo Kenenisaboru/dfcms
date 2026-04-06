@@ -41,8 +41,25 @@ if ($role == 'student') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - DFCMS</title>
+    <button class="theme-toggle" aria-label="Toggle dark/light mode">
+        <i class="fas fa-sun"></i>
+    </button>
+
+    <div class="voice-indicator" aria-live="polite">
+        <i class="fas fa-microphone"></i>
+        <span>Listening...</span>
+        <div class="voice-wave">
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/next-gen-ui.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="assets/css/next-gen-ui.css" rel="stylesheet">
     <style>
         :root {
             --primary: #10b981;
@@ -201,6 +218,48 @@ if ($role == 'student') {
                     <p class="stat-label">Active Complaints</p>
                     <h2 class="stat-value text-accent"><?php echo $totalComplaints; ?></h2>
                     <p class="text-dim small mt-2">Actionable requests within your scope</p>
+                    <!-- Engagement Section: Badges & Knowledge Base -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6">
+                            <div class="card p-4 h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0"><i class="fas fa-medal text-warning me-2"></i>My Achievements</h5>
+                                    <a href="student/badges.php" class="btn btn-sm btn-outline-success">View All</a>
+                                </div>
+                                <div class="badge-container d-flex gap-3 overflow-auto pb-2">
+                                    <div class="badge-item earned text-center" style="min-width: 80px;">
+                                        <i class="fas fa-bullhorn fa-2x text-success mb-1"></i>
+                                        <div class="small">First Voice</div>
+                                    </div>
+                                    <div class="badge-item text-center opacity-50" style="min-width: 80px;">
+                                        <i class="fas fa-check-circle fa-2x text-secondary mb-1"></i>
+                                        <div class="small">Solver</div>
+                                    </div>
+                                    <div class="badge-item text-center opacity-50" style="min-width: 80px;">
+                                        <i class="fas fa-bolt fa-2x text-secondary mb-1"></i>
+                                        <div class="small">Fast Track</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card p-4 h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="mb-0"><i class="fas fa-book-open text-info me-2"></i>Knowledge Base</h5>
+                                    <a href="student/knowledge_base.php" class="btn btn-sm btn-outline-info">Browse</a>
+                                </div>
+                                <p class="text-secondary small mb-3">Quick answers to common questions and system guides.</p>
+                                <div class="list-group list-group-flush bg-transparent">
+                                    <a href="student/knowledge_base.php?category=general" class="list-group-item list-group-item-action bg-transparent text-light border-secondary small py-2">
+                                        <i class="fas fa-chevron-right me-2 text-info"></i>How to submit a complaint
+                                    </a>
+                                    <a href="student/knowledge_base.php?category=technical" class="list-group-item list-group-item-action bg-transparent text-light border-secondary small py-2">
+                                        <i class="fas fa-chevron-right me-2 text-info"></i>Password Reset Guide
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="col-md-4">
