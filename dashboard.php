@@ -2,6 +2,7 @@
 // dashboard.php
 session_start();
 require_once 'config/database.php';
+require_once 'lib/NotificationService.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: auth/login.php");
@@ -203,6 +204,14 @@ if ($role == 'student') {
             <a href="teacher/assign_lab.php"><i class="fas fa-tasks"></i> Assign Tasks</a>
         <?php endif; ?>
         
+        <!-- Quick Links -->
+        <hr class="border-secondary my-3">
+        <h6 class="text-dim text-uppercase small mb-3">Quick Access</h6>
+        <a href="student/notifications.php"><i class="fas fa-bell"></i> Notifications</a>
+        <a href="student/messages.php"><i class="fas fa-envelope"></i> Messages</a>
+        <a href="student/badges.php"><i class="fas fa-medal"></i> My Badges</a>
+        <a href="student/knowledge_base.php"><i class="fas fa-book"></i> Knowledge Base</a>
+        
         <a href="auth/logout.php" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 
@@ -223,7 +232,10 @@ if ($role == 'student') {
             <div class="col-md-4">
                 <div class="card card-custom">
                     <p class="stat-label">Notifications</p>
-                    <h2 class="stat-value text-white">0</h2>
+                    <h2 class="stat-value text-white"><?php
+                        $notificationService = new NotificationService();
+                        echo $notificationService->getUnreadCount($userId);
+                    ?></h2>
                     <p class="text-dim small mt-2">Unread messages in your inbox</p>
                 </div>
             </div>
