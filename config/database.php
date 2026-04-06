@@ -3,9 +3,9 @@
 $host = '127.0.0.1';
 $db = 'dfcms';
 $user = 'root';
-$pass = '12345678';
+$pass = '';
 
-$dsn = "mysql:host=$host;port=3309;dbname=$db;charset=utf8mb4";
+$dsn = "mysql:host=$host;dbname=$db;charset=utf8mb4";
 $options = [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_SILENT,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
