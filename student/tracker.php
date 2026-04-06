@@ -180,9 +180,16 @@ $complaints = $stmt->fetchAll();
                                         </div>
                                     </td>
                                     <td class="text-end">
-                                        <button class="btn btn-sm btn-view rounded-pill px-3" onclick="alert('Viewing historical details is being finalized.')">
-                                            <i class="fas fa-history me-1"></i> View Log
-                                        </button>
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <?php if ($c['assigned_to']): ?>
+                                                <a href="messages.php?receiver_id=<?php echo $c['assigned_to']; ?>" class="btn btn-sm btn-view rounded-pill px-3">
+                                                    <i class="fas fa-comment-dots me-1"></i> Message
+                                                </a>
+                                            <?php endif; ?>
+                                            <button class="btn btn-sm btn-view rounded-pill px-3" onclick="alert('Viewing historical details is being finalized.')">
+                                                <i class="fas fa-history me-1"></i> View Log
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
