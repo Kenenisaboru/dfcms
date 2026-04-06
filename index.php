@@ -14,6 +14,7 @@ if (isset($_SESSION['user_id'])) {
     <title>University DFCMS - Digital Feedback & Complaint Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="assets/css/next-gen-ui.css" rel="stylesheet">
     <style>
         body { background-color: #0c0d0e; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; }
         
