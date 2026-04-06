@@ -1,0 +1,142 @@
+/* assets/css/next-gen-ui.css */
+:root {
+    --primary: #10b981;
+    --primary-glow: rgba(16, 185, 129, 0.4);
+    --bg-dark: #0c0d0e;
+    --bg-light: #f8f9fa;
+    --text-dark: #ffffff;
+    --text-light: #1f2937;
+    --card-bg-dark: rgba(255, 255, 255, 0.03);
+    --card-bg-light: #ffffff;
+    --border-dark: rgba(255, 255, 255, 0.1);
+    --border-light: rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark Mode (Default) */
+body.dark-mode {
+    background-color: var(--bg-dark);
+    color: var(--text-dark);
+}
+
+body.dark-mode .card,
+body.dark-mode .modal-content {
+    background: var(--card-bg-dark);
+    border: 1px solid var(--border-dark);
+    backdrop-filter: blur(12px);
+}
+
+/* Light Mode */
+body.light-mode {
+    background-color: var(--bg-light);
+    color: var(--text-light);
+}
+
+body.light-mode .card,
+body.light-mode .modal-content {
+    background: var(--card-bg-light);
+    border: 1px solid var(--border-light);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .main-header {
+    background: rgba(248, 249, 250, 0.95);
+    border-bottom: 1px solid var(--border-light);
+}
+
+body.light-mode .nav-link {
+    color: var(--text-light) !important;
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: var(--primary);
+    border: none;
+    color: white;
+    box-shadow: 0 0 20px var(--primary-glow);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+}
+
+/* Engagement: Badges */
+.badge-item {
+    padding: 1rem;
+    border-radius: 1rem;
+    text-align: center;
+    transition: var(--transition);
+    opacity: 0.5;
+    filter: grayscale(1);
+}
+
+.badge-item.earned {
+    opacity: 1;
+    filter: grayscale(0);
+}
+
+.badge-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Voice Integration UI */
+.voice-indicator {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    background: var(--primary);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    z-index: 1000;
+}
+
+.voice-wave {
+    display: flex;
+    gap: 2px;
+}
+
+.voice-bar {
+    width: 3px;
+    height: 10px;
+    background: white;
+    animation: wave 1s infinite ease-in-out;
+}
+
+@keyframes wave {
+    0%, 100% { height: 10px; }
+    50% { height: 20px; }
+}
+
+/* Accessibility: High Contrast Focus */
+:focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
