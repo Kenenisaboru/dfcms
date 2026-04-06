@@ -235,8 +235,11 @@ $inbox = $stmt->fetchAll();
                                         <label class="form-label">Routing Comment:</label>
                                         <input type="text" name="forward_comment" class="form-control" placeholder="Explain the reason for routing..." required>
                                     </div>
-                                    <div class="col-md-2 d-flex align-items-end">
+                                    <div class="col-md-2 d-flex align-items-end gap-2">
                                         <button type="submit" name="forward_action" class="btn btn-submit w-100"><i class="fas fa-route me-1"></i> ROUTE</button>
+                                        <a href="../student/messages.php?receiver_id=<?php echo $item['student_id']; ?>" class="btn btn-outline-success border-2 rounded-pill px-3 shadow-sm d-flex align-items-center justify-content-center" title="Message Student">
+                                            <i class="fas fa-comment-dots"></i>
+                                        </a>
                                     </div>
                                 </div>
                             </form>
