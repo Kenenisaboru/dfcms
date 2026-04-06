@@ -134,29 +134,29 @@ class NotificationService {
     }
 
     /**
-     * Create CR to Student communication
+     * Create unified message between any roles
      */
-    public function createCRStudentMessage($crId, $studentId, $subject, $message, $complaintId = null) {
+    public function createMessage($senderId, $receiverId, $subject, $message, $complaintId = null) {
         $stmt = $this->pdo->prepare("
-            INSERT INTO cr_student_messages (cr_id, student_id, subject, message, complaint_id, created_at) 
+            INSERT INTO messages (sender_id, receiver_id, subject, message, complaint_id, created_at) 
             VALUES (?, ?, ?, ?, ?, NOW())
         ");
-        $result = $stmt->execute(array($crId, $studentId, $subject, $message, $complaintId));
+        $result = $stmt->execute(array($senderId, $receiverId, $subject, $message, $complaintId));
 
         if ($result) {
-            // Notify student about new message
+            // Notify receiver about new message
             $stmt = $this->pdo->prepare("SELECT full_name FROM users WHERE id = ?");
-            $stmt->execute(array($crId));
-            $cr = $stmt->fetch();
+            $stmt->execute(array($senderId));
+            $sender = $stmt->fetch();
 
             $this->createNotification(
-                $studentId,
-                'cr_message',
-                'New Message from Class Representative',
-                "{$cr['full_name']} sent you a message: {$subject}",
+                $receiverId,
+                'new_message',
+                'New Message Received',
+                "{$sender['full_name']} sent you a message: {$subject}",
                 array(
                     'message_id' => $this->pdo->lastInsertId(),
-                    'cr_id' => $crId,
+                    'sender_id' => $senderId,
                     'subject' => $subject
                 )
             );
@@ -166,21 +166,22 @@ class NotificationService {
     }
 
     /**
-     * Get CR-Student conversation
+     * Get conversation between two users
      */
-    public function getCRStudentConversation($crId, $studentId, $limit = 50) {
+    public function getConversation($userId1, $userId2, $limit = 50) {
         $stmt = $this->pdo->prepare("
             SELECT m.*, 
                    u1.full_name as sender_name,
                    u2.full_name as receiver_name
-            FROM cr_student_messages m
+            FROM messages m
             JOIN users u1 ON m.sender_id = u1.id
             JOIN users u2 ON m.receiver_id = u2.id
-            WHERE (m.cr_id = ? AND m.student_id = ?)
+            WHERE (m.sender_id = ? AND m.receiver_id = ?) 
+               OR (m.sender_id = ? AND m.receiver_id = ?)
             ORDER BY m.created_at DESC
             LIMIT ?
         ");
-        $stmt->execute(array($crId, $studentId, $limit));
+        $stmt->execute(array($userId1, $userId2, $userId2, $userId1, $limit));
         return $stmt->fetchAll();
     }
 
