@@ -9,6 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 require_once '../lib/NotificationService.php';
+require_once '../config/database.php';
 
 $notificationService = new NotificationService();
 $result = $notificationService->markAllAsRead($_SESSION['user_id']);
