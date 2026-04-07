@@ -19,39 +19,42 @@ if (!isset($role)) {
 
 
 $notificationService = new NotificationService();
+$sendError = '';
+$sendSuccess = isset($_GET['success']) && $_GET['success'] == '1';
+$activeReceiverId = isset($_GET['receiver_id']) ? (int) $_GET['receiver_id'] : 0;
 
 // Handle message sending
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'send_message') {
-        $receiverId = $_POST['receiver_id'];
-        $subject = $_POST['subject'];
-        $message = $_POST['message'];
-        
-        $notificationService->createMessage($userId, $receiverId, $subject, $message);
-        
-        header("Location: messages.php?receiver_id=" . $receiverId . "&success=1");
-        exit;
+        $receiverId = isset($_POST['receiver_id']) ? (int) $_POST['receiver_id'] : 0;
+        $subject = isset($_POST['subject']) ? trim($_POST['subject']) : '';
+        $message = isset($_POST['message']) ? trim($_POST['message']) : '';
+
+        if ($receiverId <= 0 || $subject === '' || $message === '') {
+            $sendError = 'Please fill all message fields.';
+        } elseif (!$notificationService->canUsersChat($userId, $receiverId)) {
+            $sendError = 'You are not allowed to send a message to this user.';
+        } else {
+            $sent = $notificationService->createMessage($userId, $receiverId, $subject, $message);
+            if ($sent) {
+                header("Location: messages.php?receiver_id=" . $receiverId . "&success=1");
+                exit;
+            }
+            $details = trim($notificationService->getLastError());
+            $sendError = 'Message send failed. ' . ($details !== '' ? $details : 'Please try again.');
+        }
+
+        $activeReceiverId = $receiverId;
+        $messages = $notificationService->getConversation($userId, $receiverId);
     }
 }
 
+$contacts = $notificationService->getChatContacts($userId);
 
-// Get contacts based on role
-$contacts = array();
-if ($role === 'student') {
-    // Students see CRs and Teachers they've interacted with (or just all for simplicity here)
-    $stmt = $pdo->prepare("SELECT id, full_name, role FROM users WHERE role IN ('cr', 'teacher')");
-    $stmt->execute();
-    $contacts = $stmt->fetchAll();
-} else {
-    // Others (CR, Teacher, HOD) see all students (or assigned ones)
-    $stmt = $pdo->prepare("SELECT id, full_name, 'student' as role FROM users WHERE role = 'student'");
-    $stmt->execute();
-    $contacts = $stmt->fetchAll();
-}
-
-if (isset($_GET['receiver_id'])) {
-    $receiverId = $_GET['receiver_id'];
+if ($activeReceiverId > 0) {
+    $receiverId = $activeReceiverId;
     $messages = $notificationService->getConversation($userId, $receiverId);
+    $notificationService->markConversationAsRead($userId, $receiverId);
 }
 
 ?>
@@ -115,7 +118,7 @@ if (isset($_GET['receiver_id'])) {
                     <div class="conversation-list">
                         <?php foreach ($contacts as $contact): ?>
                             <a href="?receiver_id=<?php echo $contact['id']; ?>" 
-                               class="list-group-item list-group-item-action bg-transparent text-light border-secondary mb-2 <?php echo isset($_GET['receiver_id']) && $_GET['receiver_id'] == $contact['id'] ? 'active' : ''; ?>">
+                               class="list-group-item list-group-item-action bg-transparent text-light border-secondary mb-2 <?php echo $activeReceiverId == (int) $contact['id'] ? 'active' : ''; ?>">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="mb-1"><?php echo htmlspecialchars($contact['full_name']); ?></h6>
@@ -131,13 +134,19 @@ if (isset($_GET['receiver_id'])) {
 
             <!-- Conversation -->
             <div class="col-md-8">
-                <?php if (isset($_GET['receiver_id'])): ?>
+                <?php if ($sendSuccess): ?>
+                    <div class="alert alert-success">Message sent successfully.</div>
+                <?php endif; ?>
+                <?php if ($sendError !== ''): ?>
+                    <div class="alert alert-danger"><?php echo htmlspecialchars($sendError); ?></div>
+                <?php endif; ?>
+                <?php if ($activeReceiverId > 0): ?>
                     <div class="card h-100">
                         <div class="card-header border-bottom border-secondary">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h5 class="mb-0">
                                     <?php 
-                                        $target = array_filter($contacts, fn($c) => $c['id'] == $_GET['receiver_id']);
+                                        $target = array_filter($contacts, fn($c) => (int) $c['id'] === (int) $activeReceiverId);
                                         $target = reset($target);
                                         echo htmlspecialchars($target['full_name'] ?? 'Conversation');
                                     ?>
@@ -147,7 +156,7 @@ if (isset($_GET['receiver_id'])) {
                         </div>
 
                         
-                        <div class="card-body p-4" style="min-height: 400px; max-height: 500px; overflow-y: auto;">
+                        <div id="messageContainer" class="card-body p-4" style="min-height: 400px; max-height: 500px; overflow-y: auto;">
                             <?php if (empty($messages)): ?>
                                 <div class="text-center text-muted py-5">
                                     <i class="fas fa-comments fa-3x mb-3"></i>
@@ -155,7 +164,7 @@ if (isset($_GET['receiver_id'])) {
                                 </div>
                             <?php else: ?>
                                 <?php foreach (array_reverse($messages) as $message): ?>
-                                    <div class="message-bubble <?php echo $message['sender_id'] == $userId ? 'message-sent' : 'message-received'; ?>">
+                                    <div class="message-bubble <?php echo $message['sender_id'] == $userId ? 'message-sent' : 'message-received'; ?>" data-message-id="<?php echo (int) $message['id']; ?>">
                                         <div class="small fw-bold mb-1"><?php echo htmlspecialchars($message['sender_name']); ?></div>
                                         <div><?php echo nl2br(htmlspecialchars($message['message'])); ?></div>
                                         <div class="small text-muted mt-1"><?php echo date('h:i A', strtotime($message['created_at'])); ?></div>
@@ -165,15 +174,15 @@ if (isset($_GET['receiver_id'])) {
                         </div>
 
                         <div class="message-form">
-                            <form method="POST">
+                            <form id="messageForm" method="POST">
                                 <input type="hidden" name="action" value="send_message">
-                                <input type="hidden" name="receiver_id" value="<?php echo $_GET['receiver_id']; ?>">
+                                <input type="hidden" name="receiver_id" value="<?php echo (int) $activeReceiverId; ?>">
                                 <div class="row g-2">
                                     <div class="col-12 mb-2">
                                         <input type="text" name="subject" class="form-control" placeholder="Subject" required>
                                     </div>
                                     <div class="col">
-                                        <textarea name="message" class="form-control" rows="1" placeholder="Type your message..." required></textarea>
+                                        <textarea id="messageInput" name="message" class="form-control" rows="1" placeholder="Type your message..." required></textarea>
                                     </div>
                                     <div class="col-auto">
                                         <button class="btn btn-success h-100 px-4" type="submit">
@@ -204,5 +213,67 @@ if (isset($_GET['receiver_id'])) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="../assets/js/next-gen-ui.js"></script>
+    <script>
+        (function () {
+            const receiverId = <?php echo (int) $activeReceiverId; ?>;
+            const currentUserId = <?php echo (int) $userId; ?>;
+            const container = document.getElementById('messageContainer');
+
+            if (!receiverId || !container) {
+                return;
+            }
+
+            function renderMessage(message) {
+                const emptyState = container.querySelector('.text-center.text-muted.py-5');
+                if (emptyState) {
+                    emptyState.remove();
+                }
+
+                const bubble = document.createElement('div');
+                const senderClass = Number(message.sender_id) === currentUserId ? 'message-sent' : 'message-received';
+                bubble.className = 'message-bubble ' + senderClass;
+                bubble.setAttribute('data-message-id', message.id);
+
+                const sender = document.createElement('div');
+                sender.className = 'small fw-bold mb-1';
+                sender.textContent = message.sender_name || 'User';
+
+                const body = document.createElement('div');
+                body.textContent = message.message;
+
+                const time = document.createElement('div');
+                time.className = 'small text-muted mt-1';
+                time.textContent = message.created_time || '';
+
+                bubble.appendChild(sender);
+                bubble.appendChild(body);
+                bubble.appendChild(time);
+                container.appendChild(bubble);
+            }
+
+            async function pollMessages() {
+                const nodes = container.querySelectorAll('[data-message-id]');
+                const lastMessageId = nodes.length ? Number(nodes[nodes.length - 1].getAttribute('data-message-id')) : 0;
+
+                try {
+                    const response = await fetch('../api/chat_messages.php?receiver_id=' + receiverId + '&after_id=' + lastMessageId);
+                    const payload = await response.json();
+                    if (!payload.success || !Array.isArray(payload.messages)) {
+                        return;
+                    }
+
+                    if (payload.messages.length > 0) {
+                        payload.messages.forEach(renderMessage);
+                        container.scrollTop = container.scrollHeight;
+                    }
+                } catch (error) {
+                    // Keep polling; intermittent network errors are expected.
+                }
+            }
+
+            container.scrollTop = container.scrollHeight;
+            setInterval(pollMessages, 3000);
+        })();
+    </script>
 </body>
 </html>
