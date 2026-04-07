@@ -2,10 +2,184 @@
 // lib/NotificationService.php
 class NotificationService {
     private $pdo;
+    private $lastError = '';
+    private $columnExistsCache = array();
+    private $allowedRolePairs = array(
+        array('cr', 'student'),
+        array('student', 'teacher'),
+        array('hod', 'cr'),
+        array('hod', 'teacher'),
+        array('hod', 'lab_assistant'),
+        array('lab_assistant', 'cr')
+    );
 
     public function __construct() {
         global $pdo;
         $this->pdo = $pdo;
+    }
+
+    public function getLastError() {
+        return $this->lastError;
+    }
+
+    private function setLastError($message) {
+        $this->lastError = (string) $message;
+    }
+
+    private function tableHasColumn($tableName, $columnName) {
+        $key = $tableName . '.' . $columnName;
+        if (isset($this->columnExistsCache[$key])) {
+            return $this->columnExistsCache[$key];
+        }
+
+        $stmt = $this->pdo->prepare("SHOW COLUMNS FROM `$tableName` LIKE ?");
+        $stmt->execute(array($columnName));
+        $exists = (bool) $stmt->fetch();
+        $this->columnExistsCache[$key] = $exists;
+        return $exists;
+    }
+
+    /**
+     * Ensure core chat table exists in environments where only partial SQL was imported.
+     */
+    private function ensureMessagesTableExists() {
+        if (!isset($this->pdo) || !$this->pdo) {
+            return false;
+        }
+
+        try {
+            $stmt = $this->pdo->query("SHOW TABLES LIKE 'messages'");
+            $exists = (bool) $stmt->fetch();
+            if ($exists) {
+                return true;
+            }
+
+            $sql = "
+                CREATE TABLE IF NOT EXISTS `messages` (
+                  `id` int(11) NOT NULL AUTO_INCREMENT,
+                  `sender_id` int(11) NOT NULL,
+                  `receiver_id` int(11) NOT NULL,
+                  `subject` varchar(255) DEFAULT NULL,
+                  `message` text NOT NULL,
+                  `complaint_id` int(11) DEFAULT NULL,
+                  `is_read` tinyint(1) DEFAULT 0,
+                  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+                  PRIMARY KEY (`id`),
+                  KEY `idx_sender_receiver` (`sender_id`, `receiver_id`),
+                  KEY `idx_receiver_read` (`receiver_id`, `is_read`),
+                  CONSTRAINT `fk_messages_sender` FOREIGN KEY (`sender_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+                  CONSTRAINT `fk_messages_receiver` FOREIGN KEY (`receiver_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
+                  CONSTRAINT `fk_messages_complaint` FOREIGN KEY (`complaint_id`) REFERENCES `complaints`(`id`) ON DELETE SET NULL
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            ";
+
+            $this->pdo->exec($sql);
+            return true;
+        } catch (Throwable $e) {
+            $this->setLastError('Failed to initialize messages table: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Normalize role labels from DB/session to canonical role keys.
+     */
+    private function normalizeRole($role) {
+        $role = strtolower(trim((string) $role));
+        $aliases = array(
+            'class_representative' => 'cr',
+            'class representative' => 'cr',
+            'representative' => 'cr',
+            'department_head' => 'hod',
+            'department head' => 'hod',
+            'head_of_department' => 'hod',
+            'lab assistant' => 'lab_assistant'
+        );
+
+        return isset($aliases[$role]) ? $aliases[$role] : $role;
+    }
+
+    /**
+     * Return true if two roles are allowed to chat.
+     */
+    public function canRolesChat($roleA, $roleB) {
+        $roleA = $this->normalizeRole($roleA);
+        $roleB = $this->normalizeRole($roleB);
+
+        foreach ($this->allowedRolePairs as $pair) {
+            if (
+                ($pair[0] === $roleA && $pair[1] === $roleB) ||
+                ($pair[0] === $roleB && $pair[1] === $roleA)
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Return true if two users are allowed to chat.
+     */
+    public function canUsersChat($userIdA, $userIdB) {
+        $stmt = $this->pdo->prepare("SELECT id, role FROM users WHERE id IN (?, ?)");
+        $stmt->execute(array($userIdA, $userIdB));
+        $users = $stmt->fetchAll();
+
+        if (count($users) !== 2) {
+            return false;
+        }
+
+        return $this->canRolesChat(
+            $this->normalizeRole($users[0]['role']),
+            $this->normalizeRole($users[1]['role'])
+        );
+    }
+
+    /**
+     * Contacts the user is allowed to message.
+     */
+    public function getChatContacts($userId) {
+        $stmt = $this->pdo->prepare("SELECT role FROM users WHERE id = ?");
+        $stmt->execute(array($userId));
+        $currentUser = $stmt->fetch();
+
+        if (!$currentUser || !isset($currentUser['role'])) {
+            return array();
+        }
+
+        $currentRole = $this->normalizeRole($currentUser['role']);
+
+        $allowedRoles = array();
+        foreach ($this->allowedRolePairs as $pair) {
+            if ($pair[0] === $currentRole) {
+                $allowedRoles[] = $pair[1];
+            } elseif ($pair[1] === $currentRole) {
+                $allowedRoles[] = $pair[0];
+            }
+        }
+
+        $allowedRoles = array_values(array_unique($allowedRoles));
+        if (empty($allowedRoles)) {
+            return array();
+        }
+
+        $stmt = $this->pdo->prepare("
+            SELECT id, full_name, role
+            FROM users
+            WHERE id != ?
+            ORDER BY full_name ASC
+        ");
+        $stmt->execute(array($userId));
+        $allUsers = $stmt->fetchAll();
+
+        $filtered = array();
+        foreach ($allUsers as $user) {
+            if (in_array($this->normalizeRole($user['role']), $allowedRoles, true)) {
+                $filtered[] = $user;
+            }
+        }
+
+        return $filtered;
     }
 
     /**
@@ -137,11 +311,58 @@ class NotificationService {
      * Create unified message between any roles
      */
     public function createMessage($senderId, $receiverId, $subject, $message, $complaintId = null) {
-        $stmt = $this->pdo->prepare("
-            INSERT INTO messages (sender_id, receiver_id, subject, message, complaint_id, created_at) 
-            VALUES (?, ?, ?, ?, ?, NOW())
-        ");
-        $result = $stmt->execute(array($senderId, $receiverId, $subject, $message, $complaintId));
+        $this->setLastError('');
+
+        if (!isset($this->pdo) || !$this->pdo) {
+            $this->setLastError('Database connection not available.');
+            return false;
+        }
+
+        if (!$this->ensureMessagesTableExists()) {
+            if ($this->lastError === '') {
+                $this->setLastError('Messages table is missing and could not be created.');
+            }
+            return false;
+        }
+
+        if (!$this->canUsersChat($senderId, $receiverId)) {
+            $this->setLastError('Role policy blocked this chat.');
+            return false;
+        }
+
+        try {
+            $columns = array('sender_id', 'receiver_id', 'message');
+            $values = array($senderId, $receiverId, $message);
+
+            if ($this->tableHasColumn('messages', 'subject')) {
+                $columns[] = 'subject';
+                $values[] = $subject;
+            }
+            if ($this->tableHasColumn('messages', 'complaint_id')) {
+                $columns[] = 'complaint_id';
+                $values[] = $complaintId;
+            }
+            if ($this->tableHasColumn('messages', 'created_at')) {
+                $columns[] = 'created_at';
+            }
+
+            $placeholders = array_fill(0, count($values), '?');
+            if ($this->tableHasColumn('messages', 'created_at')) {
+                $placeholders[] = 'NOW()';
+            }
+
+            $sql = "INSERT INTO messages (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
+            $stmt = $this->pdo->prepare($sql);
+            $result = $stmt->execute($values);
+
+            if (!$result) {
+                $err = $stmt->errorInfo();
+                $this->setLastError(isset($err[2]) ? $err[2] : 'Unknown database error during insert.');
+            }
+        } catch (Throwable $e) {
+            $this->setLastError($e->getMessage());
+            $result = false;
+        }
 
         if ($result) {
             // Notify receiver about new message
@@ -149,7 +370,7 @@ class NotificationService {
             $stmt->execute(array($senderId));
             $sender = $stmt->fetch();
 
-            $this->createNotification(
+            $notificationCreated = $this->createNotification(
                 $receiverId,
                 'new_message',
                 'New Message Received',
@@ -160,6 +381,9 @@ class NotificationService {
                     'subject' => $subject
                 )
             );
+            if (!$notificationCreated && $this->lastError === '') {
+                $this->setLastError('Message saved, but notification could not be created.');
+            }
         }
 
         return $result;
@@ -169,6 +393,14 @@ class NotificationService {
      * Get conversation between two users
      */
     public function getConversation($userId1, $userId2, $limit = 50) {
+        if (!$this->ensureMessagesTableExists()) {
+            return array();
+        }
+
+        if (!$this->canUsersChat($userId1, $userId2)) {
+            return array();
+        }
+
         $stmt = $this->pdo->prepare("
             SELECT m.*, 
                    u1.full_name as sender_name,
@@ -183,6 +415,38 @@ class NotificationService {
         ");
         $stmt->execute(array($userId1, $userId2, $userId2, $userId1, $limit));
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Get unread direct-message count for a user.
+     */
+    public function getUnreadMessageCount($userId) {
+        if (!$this->ensureMessagesTableExists()) {
+            return 0;
+        }
+
+        $stmt = $this->pdo->prepare("
+            SELECT COUNT(*) FROM messages
+            WHERE receiver_id = ? AND is_read = 0
+        ");
+        $stmt->execute(array($userId));
+        return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * Mark conversation messages as read for current user.
+     */
+    public function markConversationAsRead($currentUserId, $otherUserId) {
+        if (!$this->ensureMessagesTableExists()) {
+            return false;
+        }
+
+        $stmt = $this->pdo->prepare("
+            UPDATE messages
+            SET is_read = 1
+            WHERE sender_id = ? AND receiver_id = ? AND is_read = 0
+        ");
+        return $stmt->execute(array($otherUserId, $currentUserId));
     }
 
     /**
