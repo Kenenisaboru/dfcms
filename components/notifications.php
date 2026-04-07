@@ -1,6 +1,7 @@
 <?php
 // components/notifications.php
 require_once '../lib/NotificationService.php';
+require_once '../config/database.php';
 
 $notificationService = new NotificationService();
 $userId = $_SESSION['user_id'];
@@ -12,11 +13,13 @@ $unreadCount = $notificationService->getUnreadCount($userId);
 <div class="dropdown">
     <button class="btn btn-outline-light position-relative" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
         <i class="fas fa-bell"></i>
-        <?php if ($unreadCount > 0): ?>
-            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationBadge">
-                <?php echo $unreadCount > 99 ? '99+' : $unreadCount; ?>
-            </span>
-        <?php endif; ?>
+        <span
+            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+            id="notificationBadge"
+            style="<?php echo $unreadCount > 0 ? '' : 'display:none;'; ?>"
+        >
+            <?php echo $unreadCount > 99 ? '99+' : (int) $unreadCount; ?>
+        </span>
     </button>
     
     <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark notification-dropdown" style="min-width: 350px; max-height: 400px; overflow-y: auto;" aria-labelledby="notificationDropdown">
@@ -52,6 +55,7 @@ $unreadCount = $notificationService->getUnreadCount($userId);
                                     $iconColor = 'text-success';
                                     break;
                                 case 'cr_message':
+                                case 'new_message':
                                     $iconClass = 'fa-envelope';
                                     $iconColor = 'text-primary';
                                     break;
@@ -132,8 +136,13 @@ function handleNotificationClick(notificationId, type, data) {
             }
             break;
         case 'cr_message':
+        case 'new_message':
             if (data && data.message_id) {
-                window.location.href = 'messages.php?message_id=' + data.message_id;
+                if (data.sender_id) {
+                    window.location.href = 'messages.php?receiver_id=' + data.sender_id;
+                } else {
+                    window.location.href = 'messages.php';
+                }
             }
             break;
         default:
@@ -176,22 +185,22 @@ function markAllNotificationsRead() {
       });
 }
 
-// Auto-refresh notifications every 30 seconds
+// Auto-refresh notifications every 5 seconds for near real-time updates.
 setInterval(() => {
     fetch('../api/get_unread_count.php')
         .then(response => response.json())
         .then(data => {
             const badge = document.getElementById('notificationBadge');
             if (badge) {
-                if (data.count > 0) {
+                if (data.success && data.count > 0) {
                     badge.textContent = data.count > 99 ? '99+' : data.count;
-                    badge.style.display = 'block';
+                    badge.style.display = 'inline-block';
                 } else {
                     badge.style.display = 'none';
                 }
             }
         });
-}, 30000);
+}, 5000);
 </script>
 
 <?php
