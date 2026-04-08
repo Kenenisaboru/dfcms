@@ -4,6 +4,7 @@ session_start();
 require_once '../config/database.php';
 require_once '../config/permissions.php';
 require_once '../config/notifications.php';
+require_once '../lib/DebugLogger.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     die("Access Denied: Only students can submit complaints.");
@@ -17,6 +18,9 @@ $stmt = $pdo->query("SELECT id, full_name, role FROM users WHERE role IN ('cr', 
 $receivers = $stmt->fetchAll();
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // #region agent log
+    DebugLogger::log('baseline', 'H3', 'student/submit_complaint.php:POST', 'complaint_submit_attempt', array('hasAttachment' => isset($_FILES['attachment']) ? 1 : 0, 'sessionRole' => isset($_SESSION['role']) ? $_SESSION['role'] : 'none'));
+    // #endregion
     $category = trim($_POST['category']);
     $priority = $_POST['priority'];
     $receiver_id = $_POST['receiver_id'];
@@ -41,6 +45,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $filename = $_FILES['attachment']['name'];
             $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
             $size = $_FILES['attachment']['size'];
+            $mime = function_exists('mime_content_type') ? @mime_content_type($_FILES['attachment']['tmp_name']) : 'unknown';
+            // #region agent log
+            DebugLogger::log('baseline', 'H4', 'student/submit_complaint.php:file-upload', 'complaint_attachment_metadata', array('ext' => $ext, 'size' => (int)$size, 'mime' => (string)$mime));
+            // #endregion
 
             if (!in_array($ext, $allowed)) {
                 $error = "Invalid file type. Only JPG, PNG, and PDF allowed.";
