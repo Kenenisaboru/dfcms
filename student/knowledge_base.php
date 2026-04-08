@@ -84,6 +84,36 @@ $categories = EngagementConfig::$knowledge_base_categories;
         </div>
 
         <div class="row g-4">
+            <div class="col-12">
+                <div class="card p-4 mb-2">
+                    <h3 class="h5 mb-3"><i class="fas fa-paper-plane text-success me-2"></i>How to Submit a Complaint</h3>
+                    <ol class="mb-0 text-secondary">
+                        <li>Log in to DFCMS with your student account.</li>
+                        <li>Open <strong>Submit Complaint</strong> from the menu or dashboard.</li>
+                        <li>Select complaint <strong>Category</strong> and <strong>Priority Level</strong>.</li>
+                        <li>Choose <strong>Route Complaint To</strong> (Class Representative or Teacher).</li>
+                        <li>Write a clear issue description: what happened, when, where, and key details.</li>
+                        <li>Optionally attach evidence (JPG, PNG, PDF up to 5MB).</li>
+                        <li>Click <strong>Initialize Workflow</strong> to submit.</li>
+                        <li>Go to <strong>Track Complaints</strong> to monitor status and use <strong>Messages</strong> for follow-up.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="card p-4 mb-2">
+                    <h3 class="h5 mb-3"><i class="fas fa-key text-warning me-2"></i>Password Reset Guide</h3>
+                    <ol class="mb-0 text-secondary">
+                        <li>Open the DFCMS login page.</li>
+                        <li>Use <strong>Forgot Password</strong> if available.</li>
+                        <li>Enter your registered email and follow the reset link.</li>
+                        <li>Create a strong new password (at least 8 characters with upper, lower, number, and symbol).</li>
+                        <li>Log in again with the new password.</li>
+                        <li>If reset is not available, contact your DFCMS admin/department IT to reset your account.</li>
+                    </ol>
+                </div>
+            </div>
+
             <?php if (empty($articles)): ?>
                 <div class="col-12 text-center py-5">
                     <i class="fas fa-search fa-3x text-secondary mb-3"></i>
