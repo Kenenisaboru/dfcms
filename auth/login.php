@@ -2,6 +2,7 @@
 // auth/login.php
 session_start();
 require_once '../config/database.php';
+require_once '../lib/DebugLogger.php';
 
 if (isset($_SESSION['user_id'])) {
     header("Location: ../dashboard.php");
@@ -13,6 +14,9 @@ $error = '';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
+    // #region agent log
+    DebugLogger::log('baseline', 'H5', 'auth/login.php:POST', 'login_attempt', array('emailHash' => substr(sha1(strtolower($email)), 0, 12), 'passwordLen' => strlen((string)$password)));
+    // #endregion
 
     if (empty($email) || empty($password)) {
         $error = "Please fill in all fields.";
@@ -24,6 +28,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
+            // #region agent log
+            DebugLogger::log('baseline', 'H5', 'auth/login.php:POST', 'login_success', array('userId' => (int)$user['id'], 'role' => (string)$user['role']));
+            // #endregion
             session_regenerate_id(true);
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['full_name'] = $user['full_name'];
@@ -31,6 +38,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: ../dashboard.php");
             exit;
         } else {
+            // #region agent log
+            DebugLogger::log('baseline', 'H5', 'auth/login.php:POST', 'login_failed', array('emailHash' => substr(sha1(strtolower($email)), 0, 12)));
+            // #endregion
             $error = "Invalid email or password.";
         }
     }
