@@ -85,6 +85,46 @@ class NotificationService {
     }
 
     /**
+     * Ensure notifications table exists for real-time badge/dropdown delivery.
+     */
+    private function ensureNotificationsTableExists() {
+        if (!isset($this->pdo) || !$this->pdo) {
+            return false;
+        }
+
+        try {
+            $stmt = $this->pdo->query("SHOW TABLES LIKE 'notifications'");
+            $exists = (bool) $stmt->fetch();
+            if ($exists) {
+                return true;
+            }
+
+            $sql = "
+                CREATE TABLE IF NOT EXISTS `notifications` (
+                  `id` int(11) NOT NULL AUTO_INCREMENT,
+                  `user_id` int(11) NOT NULL,
+                  `type` varchar(50) DEFAULT 'general',
+                  `title` varchar(100) DEFAULT NULL,
+                  `message` text NOT NULL,
+                  `data` text DEFAULT NULL,
+                  `is_read` tinyint(1) DEFAULT 0,
+                  `read_at` timestamp NULL DEFAULT NULL,
+                  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+                  PRIMARY KEY (`id`),
+                  KEY `idx_notifications_user_read` (`user_id`, `is_read`),
+                  CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            ";
+
+            $this->pdo->exec($sql);
+            return true;
+        } catch (Throwable $e) {
+            $this->setLastError('Failed to initialize notifications table: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Normalize role labels from DB/session to canonical role keys.
      */
     private function normalizeRole($role) {
@@ -225,17 +265,38 @@ class NotificationService {
      * Create notification for user
      */
     public function createNotification($userId, $type, $title, $message, $data = array()) {
+        $this->setLastError('');
+        if (!isset($this->pdo) || !$this->pdo) {
+            $this->setLastError('Database connection not available.');
+            return false;
+        }
+        if (!$this->ensureNotificationsTableExists()) {
+            if ($this->lastError === '') {
+                $this->setLastError('Notifications table is missing and could not be created.');
+            }
+            return false;
+        }
+
         $stmt = $this->pdo->prepare("
             INSERT INTO notifications (user_id, type, title, message, data, created_at) 
             VALUES (?, ?, ?, ?, ?, NOW())
         ");
-        return $stmt->execute(array($userId, $type, $title, $message, json_encode($data)));
+        $result = $stmt->execute(array($userId, $type, $title, $message, json_encode($data)));
+        if (!$result) {
+            $err = $stmt->errorInfo();
+            $this->setLastError(isset($err[2]) ? $err[2] : 'Unknown notification insert error.');
+        }
+        return $result;
     }
 
     /**
      * Get user notifications
      */
     public function getUserNotifications($userId, $limit = 10, $unreadOnly = false) {
+        if (!$this->ensureNotificationsTableExists()) {
+            return array();
+        }
+
         $sql = "SELECT * FROM notifications WHERE user_id = ?";
         $params = array($userId);
 
@@ -255,6 +316,10 @@ class NotificationService {
      * Mark notification as read
      */
     public function markAsRead($notificationId, $userId) {
+        if (!$this->ensureNotificationsTableExists()) {
+            return false;
+        }
+
         $stmt = $this->pdo->prepare("
             UPDATE notifications SET is_read = 1, read_at = NOW() 
             WHERE id = ? AND user_id = ?
@@ -266,6 +331,10 @@ class NotificationService {
      * Mark all notifications as read for user
      */
     public function markAllAsRead($userId) {
+        if (!$this->ensureNotificationsTableExists()) {
+            return false;
+        }
+
         $stmt = $this->pdo->prepare("
             UPDATE notifications SET is_read = 1, read_at = NOW() 
             WHERE user_id = ? AND is_read = 0
@@ -277,6 +346,10 @@ class NotificationService {
      * Get unread count
      */
     public function getUnreadCount($userId) {
+        if (!$this->ensureNotificationsTableExists()) {
+            return 0;
+        }
+
         $stmt = $this->pdo->prepare("
             SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0
         ");
