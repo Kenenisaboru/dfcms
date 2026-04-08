@@ -1,5 +1,6 @@
 <?php
 // lib/EngagementService.php
+require_once __DIR__ . '/../config/engagement_config.php';
 
 class EngagementService {
     private $pdo;
@@ -13,11 +14,26 @@ class EngagementService {
      * Badge System
      */
     public function getUserBadges($userId) {
-        $stmt = $this->pdo->prepare("SELECT badge_type, awarded_at FROM user_badges WHERE user_id = ?");
-        $stmt->execute(array($userId));
-        $earned = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
-        
         $allBadges = EngagementConfig::$badges;
+        $earned = array();
+
+        if (!isset($this->pdo) || !$this->pdo) {
+            foreach ($allBadges as $key => &$badge) {
+                $badge['earned'] = false;
+                $badge['awarded_at'] = null;
+            }
+            return $allBadges;
+        }
+
+        try {
+            $stmt = $this->pdo->prepare("SELECT badge_type, awarded_at FROM user_badges WHERE user_id = ?");
+            $stmt->execute(array($userId));
+            $earned = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        } catch (Throwable $e) {
+            // If engagement tables are not imported yet, return badge definitions as locked.
+            $earned = array();
+        }
+
         foreach ($allBadges as $key => &$badge) {
             $badge['earned'] = isset($earned[$key]);
             $badge['awarded_at'] = $badge['earned'] ? $earned[$key] : null;
