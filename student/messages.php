@@ -11,6 +11,10 @@ if (!isset($_SESSION['user_id'])) {
 
 $userId = $_SESSION['user_id'];
 $role = $_SESSION['role'];
+$roleKey = strtolower(trim((string) $role));
+if (in_array($roleKey, array('department_head', 'department head', 'head_of_department'), true)) {
+    $roleKey = 'hod';
+}
 
 // Allow any logged-in user
 if (!isset($role)) {
@@ -21,6 +25,8 @@ if (!isset($role)) {
 $notificationService = new NotificationService();
 $sendError = '';
 $sendSuccess = isset($_GET['success']) && $_GET['success'] == '1';
+$broadcastError = '';
+$broadcastSuccess = '';
 $activeReceiverId = isset($_GET['receiver_id']) ? (int) $_GET['receiver_id'] : 0;
 
 // Handle message sending
@@ -46,6 +52,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
         $activeReceiverId = $receiverId;
         $messages = $notificationService->getConversation($userId, $receiverId);
+    } elseif ($_POST['action'] === 'broadcast_hod') {
+        if ($roleKey !== 'hod') {
+            $broadcastError = 'Only HOD can broadcast messages.';
+        } else {
+            $subject = isset($_POST['subject']) ? trim($_POST['subject']) : '';
+            $message = isset($_POST['message']) ? trim($_POST['message']) : '';
+
+            if ($subject === '' || $message === '') {
+                $broadcastError = 'Please provide subject and message for broadcast.';
+            } else {
+                $sentCount = $notificationService->broadcastAsHOD($userId, $subject, $message);
+                if ($sentCount > 0) {
+                    $broadcastSuccess = "Broadcast sent to {$sentCount} users.";
+                } else {
+                    $details = trim($notificationService->getLastError());
+                    $broadcastError = 'Broadcast failed. ' . ($details !== '' ? $details : 'Please try again.');
+                }
+            }
+        }
     }
 }
 
@@ -69,31 +94,140 @@ if ($activeReceiverId > 0) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="../assets/css/next-gen-ui.css" rel="stylesheet">
     <style>
+        :root {
+            --primary: #10b981;
+            --primary-glow: rgba(16, 185, 129, 0.4);
+            --bg-dark: #0c0d0e;
+            --card-bg: rgba(18, 18, 18, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-light: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        body { 
+            background-color: var(--bg-dark); 
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
+            color: var(--text-light); 
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        .main-header {
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .card-custom { 
+            background: var(--card-bg); 
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border) !important; 
+            border-radius: 20px !important; 
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .text-dim { color: var(--text-dim) !important; }
+
         .conversation-list {
-            max-height: 400px;
+            max-height: 600px;
             overflow-y: auto;
         }
-        .message-bubble {
-            max-width: 70%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            margin-bottom: 8px;
+        
+        .conversation-list .list-group-item {
+            border: none;
+            border-bottom: 1px solid var(--glass-border) !important;
+            transition: all 0.3s ease;
+            padding: 16px 20px;
         }
+        
+        .conversation-list .list-group-item:hover, 
+        .conversation-list .list-group-item.active {
+            background: rgba(16, 185, 129, 0.1) !important;
+            border-left: 4px solid var(--primary) !important;
+        }
+
+        .conversation-list .list-group-item.active h6 {
+            color: var(--primary) !important;
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 14px 18px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
         .message-sent {
             background: var(--primary);
-            color: white;
+            color: #ffffff;
             margin-left: auto;
+            border-bottom-right-radius: 4px;
         }
+        
+        .message-sent .text-muted {
+            color: rgba(255,255,255,0.7) !important;
+        }
+
         .message-received {
-            background: var(--card-bg-dark);
-            border: 1px solid var(--border-dark);
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-light);
+            border-bottom-left-radius: 4px;
         }
+        
+        .message-received .text-muted {
+            color: var(--text-dim) !important;
+        }
+
         .message-form {
             position: sticky;
             bottom: 0;
-            background: var(--card-bg-dark);
-            border-top: 1px solid var(--border-dark);
-            padding: 16px;
+            background: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--glass-border);
+            padding: 20px;
+        }
+
+        /* Custom form controls for dark mode */
+        .form-control-dark {
+            background: rgba(255,255,255,0.05) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: var(--text-light) !important;
+        }
+        
+        .form-control-dark:focus {
+            background: rgba(255,255,255,0.08) !important;
+            border-color: var(--primary) !important;
+            color: var(--text-light) !important;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2) !important;
+            outline: none;
+        }
+        
+        .form-control-dark::placeholder {
+            color: var(--text-dim) !important;
+        }
+
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
         }
     </style>
 </head>
@@ -113,23 +247,51 @@ if ($activeReceiverId > 0) {
     <div class="container" style="margin-top: 100px;">
         <div class="row">
             <!-- Contact List -->
-            <div class="col-md-4">
-                    <h5 class="mb-3">Recent Contacts</h5>
-                    <div class="conversation-list">
-                        <?php foreach ($contacts as $contact): ?>
-                            <a href="?receiver_id=<?php echo $contact['id']; ?>" 
-                               class="list-group-item list-group-item-action bg-transparent text-light border-secondary mb-2 <?php echo $activeReceiverId == (int) $contact['id'] ? 'active' : ''; ?>">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-1"><?php echo htmlspecialchars($contact['full_name']); ?></h6>
-                                        <small class="text-muted opacity-75"><?php echo strtoupper($contact['role']); ?></small>
-                                    </div>
-                                    <i class="fas fa-chevron-right text-secondary small"></i>
-                                </div>
-                            </a>
-                        <?php endforeach; ?>
+            <div class="col-md-4 mb-4 mb-md-0">
+                <?php if ($roleKey === 'hod'): ?>
+                    <div class="card card-custom mb-3">
+                        <div class="card-header border-bottom border-secondary pt-3 pb-2 px-3 bg-transparent">
+                            <h6 class="fw-bold mb-0"><i class="fas fa-bullhorn text-warning me-2"></i>HOD Broadcast</h6>
+                        </div>
+                        <div class="card-body">
+                            <?php if ($broadcastSuccess !== ''): ?>
+                                <div class="alert alert-success py-2 mb-2"><?php echo htmlspecialchars($broadcastSuccess); ?></div>
+                            <?php endif; ?>
+                            <?php if ($broadcastError !== ''): ?>
+                                <div class="alert alert-danger py-2 mb-2"><?php echo htmlspecialchars($broadcastError); ?></div>
+                            <?php endif; ?>
+                            <form method="POST">
+                                <input type="hidden" name="action" value="broadcast_hod">
+                                <input type="text" name="subject" class="form-control form-control-dark mb-2" placeholder="Broadcast subject" required>
+                                <textarea name="message" class="form-control form-control-dark mb-2" rows="3" placeholder="Broadcast message to all roles..." required></textarea>
+                                <button type="submit" class="btn btn-warning w-100 fw-semibold">
+                                    <i class="fas fa-paper-plane me-1"></i>Send to All Users
+                                </button>
+                            </form>
+                        </div>
                     </div>
-
+                <?php endif; ?>
+                <div class="card card-custom h-100">
+                    <div class="card-header border-bottom border-secondary pt-4 pb-3 px-4 bg-transparent">
+                        <h5 class="fw-bold mb-0"><i class="fas fa-users text-primary me-2"></i>Recent Contacts</h5>
+                    </div>
+                    <div class="card-body p-0 conversation-list">
+                        <div class="list-group list-group-flush bg-transparent">
+                            <?php foreach ($contacts as $contact): ?>
+                                <a href="?receiver_id=<?php echo $contact['id']; ?>" 
+                                   class="list-group-item list-group-item-action bg-transparent text-light mb-0 <?php echo $activeReceiverId == (int) $contact['id'] ? 'active' : ''; ?>">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-1 text-light fw-semibold fs-6"><?php echo htmlspecialchars($contact['full_name']); ?></h6>
+                                            <small class="text-dim fw-bold" style="letter-spacing: 0.5px; font-size: 0.65rem;"><?php echo strtoupper($contact['role']); ?></small>
+                                        </div>
+                                        <i class="fas fa-chevron-right text-dim small opacity-50"></i>
+                                    </div>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Conversation -->
@@ -141,17 +303,17 @@ if ($activeReceiverId > 0) {
                     <div class="alert alert-danger"><?php echo htmlspecialchars($sendError); ?></div>
                 <?php endif; ?>
                 <?php if ($activeReceiverId > 0): ?>
-                    <div class="card h-100">
-                        <div class="card-header border-bottom border-secondary">
+                    <div class="card card-custom h-100 d-flex flex-column">
+                        <div class="card-header border-bottom border-secondary bg-transparent pt-4 pb-3 px-4">
                             <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0">
+                                <h5 class="fw-bold mb-0">
                                     <?php 
                                         $target = array_filter($contacts, fn($c) => (int) $c['id'] === (int) $activeReceiverId);
                                         $target = reset($target);
                                         echo htmlspecialchars($target['full_name'] ?? 'Conversation');
                                     ?>
                                 </h5>
-                                <small class="text-muted"><i class="fas fa-circle text-success me-1 small"></i> Secure Channel</small>
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 border border-success border-opacity-25"><i class="fas fa-lock me-1"></i> Secure Channel</span>
                             </div>
                         </div>
 
@@ -177,16 +339,16 @@ if ($activeReceiverId > 0) {
                             <form id="messageForm" method="POST">
                                 <input type="hidden" name="action" value="send_message">
                                 <input type="hidden" name="receiver_id" value="<?php echo (int) $activeReceiverId; ?>">
-                                <div class="row g-2">
-                                    <div class="col-12 mb-2">
-                                        <input type="text" name="subject" class="form-control" placeholder="Subject" required>
+                                <div class="row g-2 align-items-center">
+                                    <div class="col-12 mb-1">
+                                        <input type="text" name="subject" class="form-control form-control-dark rounded-pill px-4" placeholder="Message Subject..." required>
                                     </div>
                                     <div class="col">
-                                        <textarea id="messageInput" name="message" class="form-control" rows="1" placeholder="Type your message..." required></textarea>
+                                        <textarea id="messageInput" name="message" class="form-control form-control-dark rounded-4 px-4 py-3" style="resize: none;" rows="2" placeholder="Type your secure message..." required></textarea>
                                     </div>
-                                    <div class="col-auto">
-                                        <button class="btn btn-success h-100 px-4" type="submit">
-                                            <i class="fas fa-paper-plane"></i>
+                                    <div class="col-auto h-100">
+                                        <button class="btn btn-success rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;" type="submit" title="Send Message">
+                                            <i class="fas fa-paper-plane fs-5"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -194,11 +356,13 @@ if ($activeReceiverId > 0) {
                         </div>
                     </div>
                 <?php else: ?>
-                    <div class="card h-100">
-                        <div class="card-body text-center text-muted py-5">
-                            <i class="fas fa-comments fa-3x mb-3 opacity-25"></i>
-                            <h5>Select a conversation</h5>
-                            <p>Choose a contact from the list on the left to start messaging.</p>
+                    <div class="card card-custom h-100 d-flex flex-column justify-content-center align-items-center" style="min-height: 600px;">
+                        <div class="card-body text-center text-dim py-5 d-flex flex-column justify-content-center align-items-center">
+                            <div class="bg-dark bg-opacity-50 rounded-circle p-4 mb-4 border border-secondary border-opacity-25">
+                                <i class="fas fa-comments fa-3x text-primary opacity-75"></i>
+                            </div>
+                            <h4 class="fw-bold text-light">Select a Conversation</h4>
+                            <p class="text-dim mt-2" style="max-width: 300px;">Choose a contact from the list on the left to start messaging securely across the network.</p>
                         </div>
                     </div>
                 <?php endif; ?>
