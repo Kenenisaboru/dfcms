@@ -5,12 +5,15 @@ class NotificationService {
     private $lastError = '';
     private $columnExistsCache = array();
     private $allowedRolePairs = array(
-        array('cr', 'student'),
         array('student', 'teacher'),
+        array('teacher', 'cr'),
+        array('cr', 'student'),
         array('hod', 'cr'),
+        array('hod', 'student'),
         array('hod', 'teacher'),
         array('hod', 'lab_assistant'),
-        array('lab_assistant', 'cr')
+        array('lab_assistant', 'cr'),
+        array('lab_assistant', 'teacher')
     );
 
     public function __construct() {
@@ -180,6 +183,42 @@ class NotificationService {
         }
 
         return $filtered;
+    }
+
+    /**
+     * Broadcast a message as HOD to all other users.
+     * Returns number of successfully sent direct messages.
+     */
+    public function broadcastAsHOD($hodSenderId, $subject, $message) {
+        $this->setLastError('');
+
+        if (!isset($this->pdo) || !$this->pdo) {
+            $this->setLastError('Database connection not available.');
+            return 0;
+        }
+
+        $stmt = $this->pdo->prepare("SELECT role FROM users WHERE id = ?");
+        $stmt->execute(array($hodSenderId));
+        $sender = $stmt->fetch();
+
+        if (!$sender || $this->normalizeRole($sender['role']) !== 'hod') {
+            $this->setLastError('Only Department Head (HOD) can broadcast messages.');
+            return 0;
+        }
+
+        $stmt = $this->pdo->prepare("SELECT id FROM users WHERE id != ?");
+        $stmt->execute(array($hodSenderId));
+        $receivers = $stmt->fetchAll();
+
+        $sentCount = 0;
+        foreach ($receivers as $receiver) {
+            $receiverId = (int) $receiver['id'];
+            if ($this->createMessage($hodSenderId, $receiverId, $subject, $message)) {
+                $sentCount++;
+            }
+        }
+
+        return $sentCount;
     }
 
     /**
