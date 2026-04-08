@@ -1,5 +1,6 @@
 <?php
 // lib/NotificationService.php
+require_once __DIR__ . '/DebugLogger.php';
 class NotificationService {
     private $pdo;
     private $lastError = '';
@@ -266,6 +267,9 @@ class NotificationService {
      */
     public function createNotification($userId, $type, $title, $message, $data = array()) {
         $this->setLastError('');
+        // #region agent log
+        DebugLogger::log('baseline', 'H1', 'lib/NotificationService.php:createNotification', 'notification_create_attempt', array('userId' => (int)$userId, 'type' => (string)$type));
+        // #endregion
         if (!isset($this->pdo) || !$this->pdo) {
             $this->setLastError('Database connection not available.');
             return false;
@@ -286,6 +290,9 @@ class NotificationService {
             $err = $stmt->errorInfo();
             $this->setLastError(isset($err[2]) ? $err[2] : 'Unknown notification insert error.');
         }
+        // #region agent log
+        DebugLogger::log('baseline', 'H1', 'lib/NotificationService.php:createNotification', 'notification_create_result', array('ok' => (bool)$result, 'error' => $this->lastError));
+        // #endregion
         return $result;
     }
 
@@ -424,6 +431,9 @@ class NotificationService {
      */
     public function createMessage($senderId, $receiverId, $subject, $message, $complaintId = null) {
         $this->setLastError('');
+        // #region agent log
+        DebugLogger::log('baseline', 'H2', 'lib/NotificationService.php:createMessage', 'message_create_attempt', array('senderId' => (int)$senderId, 'receiverId' => (int)$receiverId, 'subjectLen' => strlen((string)$subject)));
+        // #endregion
 
         if (!isset($this->pdo) || !$this->pdo) {
             $this->setLastError('Database connection not available.');
@@ -439,6 +449,9 @@ class NotificationService {
 
         if (!$this->canUsersChat($senderId, $receiverId)) {
             $this->setLastError('Role policy blocked this chat.');
+            // #region agent log
+            DebugLogger::log('baseline', 'H2', 'lib/NotificationService.php:createMessage', 'message_blocked_role_policy', array('senderId' => (int)$senderId, 'receiverId' => (int)$receiverId));
+            // #endregion
             return false;
         }
 
@@ -475,6 +488,9 @@ class NotificationService {
             $this->setLastError($e->getMessage());
             $result = false;
         }
+        // #region agent log
+        DebugLogger::log('baseline', 'H2', 'lib/NotificationService.php:createMessage', 'message_insert_result', array('ok' => (bool)$result, 'error' => $this->lastError));
+        // #endregion
 
         if ($result) {
             // Notify receiver about new message
