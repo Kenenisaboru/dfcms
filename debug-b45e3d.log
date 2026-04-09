@@ -1,0 +1,10 @@
+{"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_attempt","data":{"emailHash":"d7d400c7c197","passwordLen":5},"timestamp":1775673998000}
+{"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_success","data":{"userId":2,"role":"student"},"timestamp":1775673998141}
+{"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_attempt","data":{"emailHash":"3643a9a62083","passwordLen":7},"timestamp":1775674072683}
+{"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_success","data":{"userId":6,"role":"cr"},"timestamp":1775674072824}
+{"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_attempt","data":{"emailHash":"abebe73c716a","passwordLen":8},"timestamp":1775674122593}
+{"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_success","data":{"userId":5,"role":"teacher"},"timestamp":1775674122734}
+{"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_attempt","data":{"emailHash":"abebe73c716a","passwordLen":8},"timestamp":1775757548494}
+{"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_success","data":{"userId":5,"role":"teacher"},"timestamp":1775757548747}
+{"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_attempt","data":{"emailHash":"0267b5758de3","passwordLen":8},"timestamp":1775757566766}
+{"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_success","data":{"userId":4,"role":"lab_assistant"},"timestamp":1775757566912}
