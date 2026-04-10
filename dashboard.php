@@ -1,27 +1,13 @@
 <?php
 // dashboard.php
-session_start();
-require_once 'config/database.php';
+require_once 'config/config.php';
 require_once 'lib/NotificationService.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: auth/login.php");
-    exit;
-}
+check_login();
 
 $role = $_SESSION['role'];
 $userId = $_SESSION['user_id'];
 $userName = $_SESSION['full_name'];
-
-// Global Error Handler for DB
-if (!$pdo) {
-    die("<div style='background:#121212;color:#ff4d4d;padding:50px;text-align:center;font-family:sans-serif;'>
-            <h2>DATABASE CONNECTION ERROR</h2>
-            <p>The dashboard cannot load because the database is not connecting.</p>
-            <p>Please check <b>config/database.php</b> and ensure your password is correct.</p>
-            <a href='auth/logout.php' style='color:#fff;text-decoration:underline;'>Logout and try again</a>
-         </div>");
-}
 
 // Fetch stats based on role
 $totalComplaints = 0;
@@ -29,11 +15,21 @@ if ($role == 'student') {
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM complaints WHERE student_id = ?");
     $stmt->execute([$userId]);
     $totalComplaints = $stmt->fetchColumn();
+    
+    // Fetch recent complaints for activity log
+    $stmtActivity = $pdo->prepare("SELECT id, category, priority, status, created_at FROM complaints WHERE student_id = ? ORDER BY created_at DESC LIMIT 5");
+    $stmtActivity->execute([$userId]);
+    $activities = $stmtActivity->fetchAll();
 } else {
     // For admins/receivers, show complaints routed to them
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM complaints WHERE current_handler_role = ? OR assigned_to = ?");
     $stmt->execute([$role, $userId]);
     $totalComplaints = $stmt->fetchColumn();
+    
+    // Fetch recent complaints for activity log
+    $stmtActivity = $pdo->prepare("SELECT id, category, priority, status, created_at FROM complaints WHERE current_handler_role = ? OR assigned_to = ? ORDER BY created_at DESC LIMIT 5");
+    $stmtActivity->execute([$role, $userId]);
+    $activities = $stmtActivity->fetchAll();
 }
 ?>
 <!DOCTYPE html>
@@ -42,22 +38,6 @@ if ($role == 'student') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - DFCMS</title>
-    <button class="theme-toggle" aria-label="Toggle dark/light mode">
-        <i class="fas fa-sun"></i>
-    </button>
-
-    <div class="voice-indicator" aria-live="polite">
-        <i class="fas fa-microphone"></i>
-        <span>Listening...</span>
-        <div class="voice-wave">
-            <div class="voice-bar"></div>
-            <div class="voice-bar"></div>
-            <div class="voice-bar"></div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/next-gen-ui.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="assets/css/next-gen-ui.css" rel="stylesheet">
@@ -93,6 +73,7 @@ if ($role == 'student') {
             position: fixed; 
             display: flex;
             flex-direction: column;
+            z-index: 1000;
         }
 
         .sidebar h4 {
@@ -196,8 +177,12 @@ if ($role == 'student') {
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <div class="sidebar" id="sidebar">
-
-        <h4 class="text-accent"><i class="fas fa-university"></i> DFCMS</h4>
+        <h4 class="text-accent d-flex align-items-center justify-content-between">
+            <span><i class="fas fa-university"></i> DFCMS</span>
+            <div class="ms-2" style="transform: scale(0.8)">
+                <?php include 'components/notifications.php'; ?>
+            </div>
+        </h4>
         <a href="dashboard.php" class="active"><i class="fas fa-home"></i> Dashboard</a>
         
         <?php if($role === 'student'): ?>
@@ -216,35 +201,13 @@ if ($role == 'student') {
         <!-- Quick Links -->
         <hr class="border-secondary my-3">
         <h6 class="text-dim text-uppercase small mb-3">Quick Access</h6>
-        <a href="student/notifications.php"><i class="fas fa-bell"></i> Notifications</a>
-        <a href="student/messages.php"><i class="fas fa-envelope"></i> Messages</a>
-        <a href="student/badges.php"><i class="fas fa-medal"></i> My Badges</a>
-        <a href="student/knowledge_base.php"><i class="fas fa-book"></i> Knowledge Base</a>
+        <a href="student/notifications.php"><i class="fas fa-bell"></i> All Alerts</a>
+        <a href="student/messages.php"><i class="fas fa-envelope"></i> Secure Chat</a>
+        <a href="student/badges.php"><i class="fas fa-medal"></i> Achievements</a>
+        <a href="student/knowledge_base.php"><i class="fas fa-book"></i> Help Guides</a>
         
         <a href="auth/logout.php" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
-
-    <!-- Sidebar JS Logic for Mobile -->
-    <script>
-        const sidebar = document.getElementById('sidebar');
-        const toggleBtn = document.getElementById('sidebarToggle');
-        const overlay = document.getElementById('sidebarOverlay');
-
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('show');
-            });
-        }
-
-        if (overlay) {
-            overlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('show');
-            });
-        }
-    </script>
-
 
     <div class="main-content">
         <div class="mb-5">
@@ -267,39 +230,15 @@ if ($role == 'student') {
                         $notificationService = new NotificationService();
                         echo $notificationService->getUnreadCount($userId);
                     ?></h2>
-                    <p class="text-dim small mt-2">Unread messages in your inbox</p>
+                    <p class="text-dim small mt-2">Unread messages and alerts</p>
                 </div>
             </div>
         </div>
 
-        <!-- Engagement Section: Mobile Quick Access Grid -->
-        <div class="d-sm-none">
-            <h5 class="fw-bold mb-3 mt-4">Quick Shortcuts</h5>
-            <div class="quick-access-grid">
-                <a href="student/notifications.php" class="quick-access-item">
-                    <i class="fas fa-bell"></i>
-                    <span>Alerts</span>
-                </a>
-                <a href="student/messages.php" class="quick-access-item">
-                    <i class="fas fa-envelope"></i>
-                    <span>Inbox</span>
-                </a>
-                <a href="student/badges.php" class="quick-access-item">
-                    <i class="fas fa-medal"></i>
-                    <span>Badges</span>
-                </a>
-                <a href="student/knowledge_base.php" class="quick-access-item">
-                    <i class="fas fa-book"></i>
-                    <span>Guides</span>
-                </a>
-            </div>
-        </div>
-
         <!-- Engagement Section: Badges & Knowledge Base -->
-
-        <div class="row g-4 mb-4">
+        <div class="row g-4 mb-4 mt-4">
             <div class="col-md-6">
-                <div class="card p-4 h-100">
+                <div class="card card-custom h-100">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0"><i class="fas fa-medal text-warning me-2"></i>My Achievements</h5>
                         <a href="student/badges.php" class="btn btn-sm btn-outline-success">View All</a>
@@ -321,12 +260,12 @@ if ($role == 'student') {
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card p-4 h-100">
+                <div class="card card-custom h-100">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0"><i class="fas fa-book-open text-info me-2"></i>Knowledge Base</h5>
                         <a href="student/knowledge_base.php" class="btn btn-sm btn-outline-info">Browse</a>
                     </div>
-                    <p class="text-secondary small mb-3">Quick answers to common questions and system guides.</p>
+                    <p class="text-dim small mb-3">Quick answers to common questions and system guides.</p>
                     <div class="list-group list-group-flush bg-transparent">
                         <a href="student/knowledge_base.php?category=general" class="list-group-item list-group-item-action bg-transparent text-light border-secondary small py-2">
                             <i class="fas fa-chevron-right me-2 text-info"></i>How to submit a complaint
@@ -342,7 +281,7 @@ if ($role == 'student') {
         <div class="card card-custom mt-5">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="fw-bold m-0">Recent Activity Overview</h4>
-                <button class="btn btn-sm btn-outline-success rounded-pill px-3">View All</button>
+                <a href="<?php echo $role === 'student' ? 'student/tracker.php' : 'representative/forward.php'; ?>" class="btn btn-sm btn-outline-success rounded-pill px-3">View Full List</a>
             </div>
             <p class="text-dim">Displaying operations scoped to your access level.</p>
             <div class="table-responsive">
@@ -353,20 +292,57 @@ if ($role == 'student') {
                             <th class="text-dim small text-uppercase">Category</th>
                             <th class="text-dim small text-uppercase">Priority</th>
                             <th class="text-dim small text-uppercase">Status</th>
-                            <th class="text-dim small text-uppercase text-end">Action</th>
+                            <th class="text-dim small text-uppercase text-end">Date</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td colspan="5" class="text-center text-dim py-5">
-                                <i class="fas fa-history fa-2x mb-3 opacity-25"></i>
-                                <p>Functional activity log will appear here.</p>
-                            </td>
-                        </tr>
+                        <?php if (empty($activities)): ?>
+                            <tr>
+                                <td colspan="5" class="text-center text-dim py-5">
+                                    <i class="fas fa-history fa-2x mb-3 opacity-25"></i>
+                                    <p>No recent activity found in your workflow.</p>
+                                </td>
+                            </tr>
+                        <?php else: ?>
+                            <?php foreach ($activities as $act): ?>
+                                <tr>
+                                    <td class="fw-bold">#<?php echo $act['id']; ?></td>
+                                    <td><?php echo htmlspecialchars($act['category']); ?></td>
+                                    <td>
+                                        <span class="badge rounded-pill bg-<?php echo strtolower($act['priority']) === 'high' ? 'danger' : (strtolower($act['priority']) === 'medium' ? 'warning text-dark' : 'info'); ?> px-2">
+                                            <?php echo $act['priority']; ?>
+                                        </span>
+                                    </td>
+                                    <td><span class="text-accent"><?php echo $act['status']; ?></span></td>
+                                    <td class="text-end text-dim small"><?php echo date('M j, Y', strtotime($act['created_at'])); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/next-gen-ui.js"></script>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('show');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('show');
+            });
+        }
+    </script>
 </body>
 </html>
