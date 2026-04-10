@@ -8,3 +8,5 @@
 {"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_success","data":{"userId":5,"role":"teacher"},"timestamp":1775757548747}
 {"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_attempt","data":{"emailHash":"0267b5758de3","passwordLen":8},"timestamp":1775757566766}
 {"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_success","data":{"userId":4,"role":"lab_assistant"},"timestamp":1775757566912}
+{"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_attempt","data":{"emailHash":"0267b5758de3","passwordLen":8},"timestamp":1775836999666}
+{"sessionId":"b45e3d","runId":"baseline","hypothesisId":"H5","location":"auth/login.php:POST","message":"login_success","data":{"userId":4,"role":"lab_assistant"},"timestamp":1775836999848}
