@@ -36,4 +36,36 @@ class CSRF {
         }
         return true;
     }
+
+    /**
+     * Validate token from JSON header (X-CSRF-Token) or POST payload.
+     */
+    public static function validateRequest($jsonResponse = false) {
+        $token = '';
+        if (isset($_SERVER['HTTP_X_CSRF_TOKEN'])) {
+            $token = (string) $_SERVER['HTTP_X_CSRF_TOKEN'];
+        } elseif (isset($_POST['csrf_token'])) {
+            $token = (string) $_POST['csrf_token'];
+        }
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $valid = isset($_SESSION['csrf_token']) && $token !== '' && hash_equals($_SESSION['csrf_token'], $token);
+        if ($valid) {
+            return true;
+        }
+
+        if ($jsonResponse) {
+            if (!headers_sent()) {
+                http_response_code(403);
+                header('Content-Type: application/json');
+            }
+            echo json_encode(array('success' => false, 'message' => 'CSRF validation failed.'));
+            exit;
+        }
+
+        header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden');
+        die("CSRF validation failed. Request denied.");
+    }
 }
