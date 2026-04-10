@@ -5,12 +5,12 @@ class NotificationManager {
     /**
      * Creates a real-time notification record in the database
      */
-    public static function send($pdo, $receiverId, $message, $link = null) {
+    public static function send($pdo, $receiverId, $message, $link = null, $type = 'general', $title = 'System Update') {
         try {
-            $stmt = $pdo->prepare("INSERT INTO notifications (user_id, message, link, is_read, created_at) VALUES (?, ?, ?, 0, NOW())");
-            return $stmt->execute([$receiverId, $message, $link]);
+            require_once __DIR__ . '/../lib/NotificationService.php';
+            $service = new NotificationService();
+            return $service->createNotification($receiverId, $type, $title, $message, ['link' => $link]);
         } catch (Exception $e) {
-            // Log error but don't crash the main process
             error_log("Notification Error: " . $e->getMessage());
             return false;
         }

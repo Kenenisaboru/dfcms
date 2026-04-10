@@ -86,12 +86,15 @@ $unreadCount = $notificationService->getUnreadCount($userId);
         <?php endif; ?>
         
         <li class="dropdown-item text-center">
-            <a href="notifications.php" class="text-decoration-none">
+            <a href="/dfcms/student/notifications.php" class="text-decoration-none">
                 <i class="fas fa-list me-2"></i>View All Notifications
             </a>
         </li>
     </ul>
 </div>
+
+<!-- Toast Container -->
+<div id="notificationToastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;"></div>
 
 <style>
 .notification-dropdown .dropdown-item {
@@ -120,35 +123,89 @@ $unreadCount = $notificationService->getUnreadCount($userId);
     min-width: 1.5em;
     text-align: center;
 }
+
+/* Telegram Style Toast */
+.tg-toast {
+    background: rgba(18, 18, 18, 0.9) !important;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    border-left: 4px solid #10b981 !important;
+    color: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+    margin-bottom: 10px;
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
 </style>
 
 <script>
 const csrfToken = '<?php echo CSRF::generate(); ?>';
+let lastSeenNotificationId = <?php echo !empty($notifications) ? (int)$notifications[0]['id'] : 0; ?>;
+
+function showTelegramToast(n) {
+    const container = document.getElementById('notificationToastContainer');
+    const toastId = 'toast_' + n.id;
+    
+    // Don't show if already exists
+    if (document.getElementById(toastId)) return;
+
+    const toast = document.createElement('div');
+    toast.id = toastId;
+    toast.className = 'toast tg-toast show';
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    
+    toast.innerHTML = `
+        <div class="toast-header bg-transparent text-white border-bottom border-secondary border-opacity-25 pb-1">
+            <i class="fas fa-bell text-success me-2"></i>
+            <strong class="me-auto">${n.title}</strong>
+            <small class="text-white-50">Just now</small>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body py-2">
+            ${n.message}
+            <div class="mt-2 text-end">
+                <button class="btn btn-sm btn-success py-0 px-2 fw-bold" style="font-size: 0.75rem" onclick="handleNotificationClick(${n.id}, '${n.type}', ${JSON.stringify(n.data)})">View</button>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(toast);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 500);
+    }, 5000);
+}
 
 function handleNotificationClick(notificationId, type, data) {
     // Mark as read
     markNotificationRead(notificationId);
     
     // Handle different notification types
+    const baseUrl = '<?php echo isset($_SESSION['role']) && $_SESSION['role'] === 'student' ? '/dfcms/student/' : '/dfcms/student/'; ?>';
+    
     switch(type) {
         case 'complaint_assigned':
         case 'cr_response':
             if (data && data.complaint_id) {
-                window.location.href = 'tracker.php?id=' + data.complaint_id;
+                window.location.href = baseUrl + 'tracker.php?id=' + data.complaint_id;
             }
             break;
         case 'cr_message':
         case 'new_message':
-            if (data && data.message_id) {
-                if (data.sender_id) {
-                    window.location.href = 'messages.php?receiver_id=' + data.sender_id;
-                } else {
-                    window.location.href = 'messages.php';
-                }
-            }
+            const receiverId = data && data.sender_id ? data.sender_id : '';
+            window.location.href = baseUrl + 'messages.php' + (receiverId ? '?receiver_id=' + receiverId : '');
             break;
         default:
-            window.location.href = 'notifications.php';
+            window.location.href = baseUrl + 'notifications.php';
     }
 }
 
@@ -193,33 +250,48 @@ function markAllNotificationsRead() {
       });
 }
 
-// Auto-refresh notifications every 5 seconds for near real-time updates.
+// Auto-refresh notifications every 4 seconds for Telegram-style updates.
 setInterval(() => {
-    fetch('../api/get_unread_count.php')
+    fetch('../api/get_latest_notifications.php?limit=5&unread_only=1')
         .then(response => response.json())
         .then(data => {
+            if (!data.success) return;
+
             const badge = document.getElementById('notificationBadge');
             if (badge) {
-                if (data.success && data.count > 0) {
-                    badge.textContent = data.count > 99 ? '99+' : data.count;
+                if (data.unread_count > 0) {
+                    badge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
                     badge.style.display = 'inline-block';
                 } else {
                     badge.style.display = 'none';
                 }
             }
+
+            // Check for new notifications to show as Toast
+            if (data.notifications && data.notifications.length > 0) {
+                const newest = data.notifications[0];
+                if (newest.id > lastSeenNotificationId) {
+                    showTelegramToast(newest);
+                    lastSeenNotificationId = newest.id;
+                    // Note: We don't live-update the dropdown list items here to avoid UI flickering, 
+                    // but the badge and toast provide the "Telegram" feel.
+                }
+            }
         });
-}, 5000);
+}, 4000);
 </script>
 
 <?php
-function timeAgo($datetime) {
-    $time = strtotime($datetime);
-    $now = time();
-    $diff = $now - $time;
-    
-    if ($diff < 60) return 'Just now';
-    if ($diff < 3600) return floor($diff / 60) . ' min ago';
-    if ($diff < 86400) return floor($diff / 3600) . ' hours ago';
-    return date('M j, Y', $time);
+if (!function_exists('timeAgo')) {
+    function timeAgo($datetime) {
+        $time = strtotime($datetime);
+        $now = time();
+        $diff = $now - $time;
+        
+        if ($diff < 60) return 'Just now';
+        if ($diff < 3600) return floor($diff / 60) . ' min ago';
+        if ($diff < 86400) return floor($diff / 3600) . ' hours ago';
+        return date('M j, Y', $time);
+    }
 }
 ?>

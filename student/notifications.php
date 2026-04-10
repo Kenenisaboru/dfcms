@@ -72,22 +72,9 @@ $unreadCount = $notificationService->getUnreadCount($userId);
     </style>
 </head>
 <body class="dark-mode">
-    <nav class="main-header py-3">
-        <div class="container d-flex justify-content-between align-items-center">
-            <a href="../dashboard.php" class="text-decoration-none text-white h4 mb-0">
-                <i class="fas fa-bell text-success me-2"></i>Notifications
-                <?php if ($unreadCount > 0): ?>
-                    <span class="badge bg-danger ms-2"><?php echo $unreadCount; ?></span>
-                <?php endif; ?>
-            </a>
-            <div class="d-flex gap-3 align-items-center">
-                <?php include '../components/notifications.php'; ?>
-                <a href="../dashboard.php" class="btn btn-outline-light btn-sm">Dashboard</a>
-            </div>
-        </div>
-    </nav>
+    <?php include '../components/navbar.php'; ?>
 
-    <div class="container" style="margin-top: 100px;">
+    <div class="container py-5">
         <!-- Actions Bar -->
         <div class="card p-3 mb-4">
             <div class="d-flex justify-content-between align-items-center">
