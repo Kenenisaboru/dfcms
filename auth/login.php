@@ -1,8 +1,4 @@
-<?php
-// auth/login.php
-session_start();
-require_once '../config/database.php';
-require_once '../lib/DebugLogger.php';
+require_once '../config/config.php';
 
 if (isset($_SESSION['user_id'])) {
     header("Location: ../dashboard.php");
@@ -12,6 +8,9 @@ if (isset($_SESSION['user_id'])) {
 $error = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Validate CSRF
+    CSRF::validate($_POST['csrf_token']);
+    
     $email = trim($_POST['email']);
     $password = $_POST['password'];
     // #region agent log
@@ -206,6 +205,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php endif; ?>
                 
                 <form method="POST" action="">
+                    <?php echo CSRF::input(); ?>
                     <div class="mb-3">
                         <label class="form-label"><i class="fas fa-envelope text-accent me-1"></i> Registered Email Address</label>
                         <input type="email" name="email" class="form-control" placeholder="example@university.edu" required>

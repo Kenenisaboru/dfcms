@@ -1,7 +1,4 @@
-<?php
-// auth/register.php
-session_start();
-require_once '../config/database.php';
+require_once '../config/config.php';
 
 if (isset($_SESSION['user_id'])) {
     header("Location: ../dashboard.php");
@@ -12,6 +9,9 @@ $error = '';
 $success = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Validate CSRF
+    CSRF::validate($_POST['csrf_token']);
+    
     $fullName = trim($_POST['full_name']);
     $email = trim($_POST['email']);
     $password = $_POST['password'];
@@ -100,6 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <?php if($success): ?><div class="alert alert-success py-2"><?php echo $success; ?></div><?php endif; ?>
 
                 <form method="POST">
+                    <?php echo CSRF::input(); ?>
                     <label class="form-label">Full Name</label>
                     <input type="text" name="full_name" class="form-control" placeholder="Enter Full Name" required>
 
