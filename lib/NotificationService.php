@@ -36,8 +36,8 @@ class NotificationService {
             return $this->columnExistsCache[$key];
         }
 
-        $stmt = $this->pdo->prepare("SHOW COLUMNS FROM `$tableName` LIKE ?");
-        $stmt->execute(array($columnName));
+        $safeColumnName = $this->pdo->quote($columnName);
+        $stmt = $this->pdo->query("SHOW COLUMNS FROM `$tableName` LIKE $safeColumnName");
         $exists = (bool) $stmt->fetch();
         $this->columnExistsCache[$key] = $exists;
         return $exists;
@@ -241,11 +241,35 @@ class NotificationService {
             return false;
         }
 
-        $stmt = $this->pdo->prepare("
-            INSERT INTO notifications (user_id, type, title, message, data, created_at) 
-            VALUES (?, ?, ?, ?, ?, NOW())
-        ");
-        $result = $stmt->execute(array($userId, $type, $title, $message, json_encode($data)));
+        $columns = array('user_id', 'message');
+        $values = array($userId, $message);
+
+        if ($this->tableHasColumn('notifications', 'type')) {
+            $columns[] = 'type';
+            $values[] = $type;
+        }
+        if ($this->tableHasColumn('notifications', 'title')) {
+            $columns[] = 'title';
+            $values[] = $title;
+        }
+        if ($this->tableHasColumn('notifications', 'data')) {
+            $columns[] = 'data';
+            $values[] = empty($data) ? null : json_encode($data);
+        }
+        if ($this->tableHasColumn('notifications', 'link')) {
+            $columns[] = 'link';
+            $values[] = isset($data['link']) ? $data['link'] : (isset($data['message_id']) ? 'messages.php' : '');
+        }
+
+        $placeholders = array_fill(0, count($values), '?');
+        if ($this->tableHasColumn('notifications', 'created_at')) {
+            $columns[] = 'created_at';
+            $placeholders[] = 'NOW()';
+        }
+
+        $sql = "INSERT INTO notifications (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $placeholders) . ")";
+        $stmt = $this->pdo->prepare($sql);
+        $result = $stmt->execute($values);
         if (!$result) {
             $err = $stmt->errorInfo();
             $this->setLastError(isset($err[2]) ? $err[2] : 'Unknown notification insert error.');
