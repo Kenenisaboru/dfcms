@@ -13,6 +13,16 @@ $current_role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
         </button>
         
         <div class="collapse navbar-collapse" id="navbarNav">
+            <?php
+            // #region agent log
+            if (function_exists('dfcms_debug_log')) {
+                dfcms_debug_log('pre-fix', 'H4', 'components/navbar.php', 'navbar_render_state', array(
+                    'isAuthenticated' => $current_role ? 1 : 0,
+                    'role' => $current_role ? (string) $current_role : 'guest'
+                ));
+            }
+            // #endregion
+            ?>
             <ul class="navbar-nav me-auto">
                 <?php if ($current_role): ?>
                     <li class="nav-item">
