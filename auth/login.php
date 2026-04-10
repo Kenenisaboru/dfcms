@@ -1,3 +1,4 @@
+<?php
 require_once '../config/config.php';
 
 if (isset($_SESSION['user_id'])) {
@@ -20,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($email) || empty($password)) {
         $error = "Please fill in all fields.";
     } elseif (!$pdo) {
-        $error = "DATABASE CONNECTION FAILED. Please check credentials in config/database.php.";
+        $error = "Service temporarily unavailable. Please try again later.";
     } else {
         $stmt = $pdo->prepare("SELECT id, full_name, password, role FROM users WHERE email = ?");
         $stmt->execute([$email]);
@@ -227,7 +228,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
     </div>
-</body>
-</html>  </div>
 </body>
 </html>

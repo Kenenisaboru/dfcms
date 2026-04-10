@@ -1,3 +1,4 @@
+<?php
 require_once '../config/config.php';
 
 if (isset($_SESSION['user_id'])) {
@@ -26,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } elseif (!in_array($role, $allowedRoles)) {
         $error = "Invalid role selected.";
     } elseif (!$pdo) {
-        $error = "DATABASE CONNECTION FAILED. Check credentials.";
+        $error = "Service temporarily unavailable. Please try again later.";
     } else {
         $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
         $stmt->execute([$email]);
