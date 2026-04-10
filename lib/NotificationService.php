@@ -44,7 +44,7 @@ class NotificationService {
     }
 
     /**
-     * Ensure core chat table exists in environments where only partial SQL was imported.
+     * Ensure required table exists (no runtime schema mutations in production).
      */
     private function ensureMessagesTableExists() {
         if (!isset($this->pdo) || !$this->pdo) {
@@ -54,39 +54,18 @@ class NotificationService {
         try {
             $stmt = $this->pdo->query("SHOW TABLES LIKE 'messages'");
             $exists = (bool) $stmt->fetch();
-            if ($exists) {
-                return true;
+            if (!$exists) {
+                $this->setLastError('Messages table is missing. Run database migrations.');
             }
-
-            $sql = "
-                CREATE TABLE IF NOT EXISTS `messages` (
-                  `id` int(11) NOT NULL AUTO_INCREMENT,
-                  `sender_id` int(11) NOT NULL,
-                  `receiver_id` int(11) NOT NULL,
-                  `subject` varchar(255) DEFAULT NULL,
-                  `message` text NOT NULL,
-                  `complaint_id` int(11) DEFAULT NULL,
-                  `is_read` tinyint(1) DEFAULT 0,
-                  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-                  PRIMARY KEY (`id`),
-                  KEY `idx_sender_receiver` (`sender_id`, `receiver_id`),
-                  KEY `idx_receiver_read` (`receiver_id`, `is_read`),
-                  CONSTRAINT `fk_messages_sender` FOREIGN KEY (`sender_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-                  CONSTRAINT `fk_messages_receiver` FOREIGN KEY (`receiver_id`) REFERENCES `users`(`id`) ON DELETE CASCADE,
-                  CONSTRAINT `fk_messages_complaint` FOREIGN KEY (`complaint_id`) REFERENCES `complaints`(`id`) ON DELETE SET NULL
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            ";
-
-            $this->pdo->exec($sql);
-            return true;
+            return $exists;
         } catch (Throwable $e) {
-            $this->setLastError('Failed to initialize messages table: ' . $e->getMessage());
+            $this->setLastError('Failed to verify messages table.');
             return false;
         }
     }
 
     /**
-     * Ensure notifications table exists for real-time badge/dropdown delivery.
+     * Ensure required table exists (no runtime schema mutations in production).
      */
     private function ensureNotificationsTableExists() {
         if (!isset($this->pdo) || !$this->pdo) {
@@ -96,31 +75,12 @@ class NotificationService {
         try {
             $stmt = $this->pdo->query("SHOW TABLES LIKE 'notifications'");
             $exists = (bool) $stmt->fetch();
-            if ($exists) {
-                return true;
+            if (!$exists) {
+                $this->setLastError('Notifications table is missing. Run database migrations.');
             }
-
-            $sql = "
-                CREATE TABLE IF NOT EXISTS `notifications` (
-                  `id` int(11) NOT NULL AUTO_INCREMENT,
-                  `user_id` int(11) NOT NULL,
-                  `type` varchar(50) DEFAULT 'general',
-                  `title` varchar(100) DEFAULT NULL,
-                  `message` text NOT NULL,
-                  `data` text DEFAULT NULL,
-                  `is_read` tinyint(1) DEFAULT 0,
-                  `read_at` timestamp NULL DEFAULT NULL,
-                  `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
-                  PRIMARY KEY (`id`),
-                  KEY `idx_notifications_user_read` (`user_id`, `is_read`),
-                  CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-            ";
-
-            $this->pdo->exec($sql);
-            return true;
+            return $exists;
         } catch (Throwable $e) {
-            $this->setLastError('Failed to initialize notifications table: ' . $e->getMessage());
+            $this->setLastError('Failed to verify notifications table.');
             return false;
         }
     }
