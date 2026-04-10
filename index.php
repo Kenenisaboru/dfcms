@@ -1,187 +1,216 @@
 <?php
-// index.php
 require_once 'config/config.php';
 
-$page_title = "Digital Feedback System";
+$page_title = "The Core Platform Engine";
+$base_path = '';
 $extra_css = '<link href="assets/css/landing.css" rel="stylesheet">';
+$nav_transparent = true;
 include 'components/head.php';
-// #region agent log
-if (function_exists('dfcms_debug_log')) {
-    dfcms_debug_log('pre-fix', 'H5', 'index.php', 'landing_render_start', array('hasExtraCss' => isset($extra_css) ? 1 : 0));
-}
-// #endregion
 ?>
-<body>
+<body class="landing-page">
     <?php include 'components/navbar.php'; ?>
 
-    <div class="master-layout">
-        <!-- Visual Section -->
-        <div class="section-visual">
-            <div class="mb-4"><i class="fas fa-university fa-3x text-accent"></i></div>
-            <h1 class="hero-title">Shaping <br><span class="text-accent">Better Together.</span></h1>
-            <p class="hero-sub opacity-75">DFCMS provides the official centralized grievance, communication, and performance-tracking infrastructure for the University department.</p>
+    <!-- Redesigned Hero Section -->
+    <section class="hero-section">
+        <div class="hero-left">
+            <div class="hero-glow"></div>
+            <div class="nav-brand-icon" style="margin-bottom: 2rem; width: 64px; height: 64px; font-size: 2rem;">
+                <i class="fas fa-university"></i>
+            </div>
             
-            <div class="row w-100 mt-4">
-                <div class="col-md-6">
-                    <div class="feature-card">
-                        <i class="fas fa-shield-alt"></i>
-                        <h6>Secure End-to-End</h6>
-                        <p>Advanced routing ensures your feedback reaches the right person instantly.</p>
-                    </div>
+            <h1 class="hero-title">
+                Shaping<br>
+                <span class="text-accent">Better Together.</span>
+            </h1>
+
+            <p class="hero-description">
+                Welcome to the Digital Feedback & Complaint Management System. A space where integrity meets technology, and every voice contributes to institutional excellence.
+            </p>
+
+            <div class="hero-cards-row">
+                <div class="hero-mini-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h4>Secure End-to-End</h4>
+                    <p>Advanced encryption ensures your feedback remains confidential.</p>
                 </div>
-                <div class="col-md-6">
-                    <div class="feature-card">
-                        <i class="fas fa-chart-line"></i>
-                        <h6>Impact Driven</h6>
-                        <p>We don't just track complaints; we measure campus improvement.</p>
-                    </div>
+                <div class="hero-mini-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h4>Impact Driven</h4>
+                    <p>Real-time insights transform complaints into actionable improvements.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Portal Section -->
-        <div class="section-portal">
+        <div class="hero-right">
             <div class="portal-header">
                 <h2>Access Portal</h2>
                 <p>Select an option to enter the University Information Science Department Hub</p>
             </div>
 
-            <div class="actions">
-                <a href="auth/login.php" class="btn-portal btn-login"><i class="fas fa-sign-in-alt me-2"></i> Login to System</a>
-                <a href="auth/register.php" class="btn-portal btn-reg"><i class="fas fa-user-plus me-2"></i> Register Account</a>
+            <div class="portal-actions">
+                <a href="auth/login.php" class="btn-portal btn-portal-primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Login to System
+                </a>
+                <a href="auth/register.php" class="btn-portal btn-portal-secondary">
+                    <i class="fas fa-user-plus"></i>
+                    Register Account
+                </a>
             </div>
 
-            <!-- Platform Quick Links -->
-            <div class="quick-nav mb-5 pt-3 border-top border-secondary border-opacity-10">
-                <p class="text-dim extra-small text-uppercase fw-bold mb-3 opacity-50" style="letter-spacing: 2px;">Nav Protocols</p>
-                <div class="d-flex flex-wrap gap-3">
-                    <a href="#platform" class="btn btn-sm btn-outline-secondary border-opacity-25 rounded-pill px-3 py-1 text-white hover-accent" style="font-size: 0.75rem;"><i class="fas fa-network-wired me-2 text-accent"></i>Engine</a>
-                    <a href="#features" class="btn btn-sm btn-outline-secondary border-opacity-25 rounded-pill px-3 py-1 text-white hover-accent" style="font-size: 0.75rem;"><i class="fas fa-star me-2 text-accent"></i>Capability</a>
-                    <a href="#about" class="btn btn-sm btn-outline-secondary border-opacity-25 rounded-pill px-3 py-1 text-white hover-accent" style="font-size: 0.75rem;"><i class="fas fa-shield-halved me-2 text-accent"></i>Protocols</a>
+            <div class="system-guidelines">
+                <div class="guideline-header">
+                    <i class="fas fa-info-circle"></i>
+                    System Guidelines
                 </div>
-            </div>
-
-            <div id="about" class="protocol-card mt-auto p-4 rounded-4" style="background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%); border: 1px solid rgba(16, 185, 129, 0.15);">
-                <div class="d-flex align-items-center mb-3">
-                    <div class="bg-accent bg-opacity-10 p-2 rounded-3 me-3">
-                        <i class="fas fa-terminal text-accent"></i>
-                    </div>
-                    <span class="fw-bold text-white small" style="letter-spacing: 1px;">ENTITY ACTION MATRIX</span>
-                </div>
-                
-                <div class="matrix-list small text-dim">
-                    <div class="mb-2 d-flex align-items-center"><i class="fas fa-circle-check text-accent me-2" style="font-size: 0.6rem;"></i> <span class="text-white me-2">Students:</span> Priority secure filing</div>
-                    <div class="mb-2 d-flex align-items-center"><i class="fas fa-circle-check text-accent me-2" style="font-size: 0.6rem;"></i> <span class="text-white me-2">CRs:</span> Tier-1 validation & routing</div>
-                    <div class="mb-2 d-flex align-items-center"><i class="fas fa-circle-check text-accent me-2" style="font-size: 0.6rem;"></i> <span class="text-white me-2">Staff:</span> Technical resolution</div>
-                    <div class="mb-0 d-flex align-items-center"><i class="fas fa-circle-check text-accent me-2" style="font-size: 0.6rem;"></i> <span class="text-white me-2">HOD:</span> Oversight & audit Control</div>
-                </div>
-            </div>
-            
-            <div class="copyright text-center mt-5">
-                <p class="copyright-text text-dim small">© 2026 University Intelligence Division. All rights reserved.</p>
+                <p>
+                    Members of the Information Science department (Students, CRs, Teachers, and HODs) can utilize this platform for efficient grievance redressal. Automated workflow ensures your concerns reach the right desk instantly.
+                </p>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Platform Section -->
-    <section id="platform" class="section-padding bg-gradient-dark py-5">
-        <div class="container py-5">
-            <h2 class="section-title text-center text-white fw-bold mb-3"><i class="fas fa-network-wired text-accent me-2"></i>The Core Platform Engine</h2>
-            <p class="section-subtitle text-center text-dim mx-auto mb-5" style="max-width: 800px; font-size: 1.1rem;">
-                DFCMS leverages a sophisticated multi-tier routing architecture that completely eliminates the historical friction of traditional university bureaucracy. By dynamically assigning issues based on priority and category, resolutions happen in days rather than weeks.
-            </p>
+    <!-- Platform Features -->
+    <section id="features" class="section-platform-features">
+        <h2>Platform Features</h2>
+        <p class="subtitle">Discover the powerful capabilities that make DFCMS the ultimate solution for institutional feedback management</p>
+        
+        <div class="features-grid-3">
+            <div class="feature-large-card">
+                <i class="fas fa-shield-halved"></i>
+                <h3>Secure End-to-End</h3>
+                <p>Advanced encryption and role-based access ensure your feedback remains confidential while reaching the right desk for resolution.</p>
+            </div>
+            <div class="feature-large-card">
+                <i class="fas fa-chart-line-up"></i>
+                <h3>Impact Analytics</h3>
+                <p>Real-time dashboards and comprehensive reporting transform complaints into actionable insights for institutional improvement.</p>
+            </div>
+            <div class="feature-large-card">
+                <i class="fas fa-route"></i>
+                <h3>Smart Routing</h3>
+                <p>Intelligent escalation algorithms automatically direct issues to the appropriate department based on category and priority.</p>
+            </div>
+        </div>
+    </section>
 
-            <div class="row g-4 mt-2">
-                <div class="col-md-4">
-                    <div class="p-4 rounded-4 bg-glass border border-secondary border-opacity-10 h-100 shadow-sm" style="transition: transform 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-accent bg-opacity-10 p-3 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
-                                <i class="fas fa-sitemap text-accent fa-lg"></i>
-                            </div>
-                            <h4 class="text-white m-0" style="font-size: 1.25rem;">Role-Based Routing</h4>
-                        </div>
-                        <p class="text-dim small lh-lg mb-0">Complaints are intelligently routed through a hierarchical chain—from CR to Teacher to HOD. This guarantees that issues are filtered properly and handled contextually by the right authoritative body.</p>
+    <!-- About Section -->
+    <section id="about" class="section-about">
+        <div class="about-header">
+            <h2>About DFCMS</h2>
+            <p class="subtitle">Transforming institutional communication through innovative technology and community-driven solutions</p>
+        </div>
+
+        <div class="about-grid-2">
+            <div class="feature-large-card">
+                <i class="fas fa-users"></i>
+                <h3>Community First</h3>
+                <p>Built on the principle that every voice matters. DFCMS creates an inclusive environment where students, faculty, and staff collaborate to build a better educational experience.</p>
+            </div>
+            <div class="feature-large-card">
+                <i class="fas fa-lightbulb"></i>
+                <h3>Innovation Driven</h3>
+                <p>Leveraging cutting-edge technology to streamline feedback processes, reduce resolution times, and provide actionable insights for continuous institutional improvement.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust & Excellence Section -->
+    <section class="section-trust-excellence">
+        <div class="wide-cards-grid">
+            <div class="feature-large-card" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <i class="fas fa-handshake"></i>
+                <h3>Trust & Transparency</h3>
+                <p>Committed to upholding the highest standards of integrity with complete audit trails, transparent processes, and fair resolution mechanisms.</p>
+            </div>
+            <div class="feature-large-card" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                <i class="fas fa-trophy"></i>
+                <h3>Excellence Standard</h3>
+                <p>Setting the benchmark for institutional feedback management with proven methodologies, continuous improvement, and exceptional user experiences.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Get In Touch Section -->
+    <section id="contact" class="main-footer">
+        <div class="footer-top">
+            <div class="footer-brand-info">
+                <h3>
+                    <div class="nav-brand-icon" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                        <i class="fas fa-university"></i>
                     </div>
+                    DFCMS<span class="text-accent">.</span>
+                </h3>
+                <p>Digital Feedback & Complaint Management System - Transforming institutional communication through innovative technology and community-driven solutions.</p>
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
                 </div>
+            </div>
 
-                <div class="col-md-4">
-                    <div class="p-4 rounded-4 bg-glass border border-secondary border-opacity-10 h-100 shadow-sm" style="transition: transform 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-info bg-opacity-10 p-3 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
-                                <i class="fas fa-comments text-info fa-lg"></i>
-                            </div>
-                            <h4 class="text-white m-0" style="font-size: 1.25rem;">Live Unified Comm.</h4>
-                        </div>
-                        <p class="text-dim small lh-lg mb-0">Built-in secure messaging and real-time Toast notifications bridge the gap between students and higher-ups. No external emails required; everything happens seamlessly within the platform framework.</p>
-                    </div>
+            <div class="footer-nav">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#features">Platform Features</a></li>
+                    <li><a href="#about">About DFCMS</a></li>
+                    <li><a href="#">Contact Support</a></li>
+                    <li><a href="auth/login.php">Login</a></li>
+                    <li><a href="auth/register.php">Register</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-nav">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="#">User Guide</a></li>
+                    <li><a href="#">System Documentation</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="contact-info-section">
+            <h4>Contact Info</h4>
+            <div class="contact-grid">
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>support@dfcms.university.edu</span>
                 </div>
-
-                <div class="col-md-4">
-                    <div class="p-4 rounded-4 bg-glass border border-secondary border-opacity-10 h-100 shadow-sm" style="transition: transform 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-warning bg-opacity-10 p-3 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
-                                <i class="fas fa-clipboard-check text-warning fa-lg"></i>
-                            </div>
-                            <h4 class="text-white m-0" style="font-size: 1.25rem;">Immutable Audit Trail</h4>
-                        </div>
-                        <p class="text-dim small lh-lg mb-0">Every forward, resolution, and communication is permanently logged in the system's history ledger. The HOD retains full oversight capabilities, turning anecdotal complaints into measurable analytics.</p>
-                    </div>
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <span>+1 (555) 123-4567</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Admin Building, Room 201</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Mon-Fri: 9:00 AM - 5:00 PM</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section id="features" class="section-padding bg-gradient-dark">
-        <div class="container">
-            <h2 class="section-title text-center">Platform Features</h2>
-            <p class="section-subtitle text-center">Discover the powerful capabilities that make DFCMS the ultimate solution for institutional feedback management</p>
-            
-            <div class="feature-grid">
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
-                    <h3 class="feature-title">Secure End-to-End</h3>
-                    <p class="feature-description">Advanced encryption and role-based access ensure your feedback remains confidential.</p>
-                </div>
+    <script src="assets/js/dfcms-ui.js"></script>
+    <script>
+        // Smooth scroll for redesign links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
                 
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
-                    <h3 class="feature-title">Impact Analytics</h3>
-                    <p class="feature-description">Real-time dashboards transform complaints into actionable insights.</p>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fas fa-route"></i></div>
-                    <h3 class="feature-title">Smart Routing</h3>
-                    <p class="feature-description">Intelligent escalation algorithms automatically direct issues to the appropriate handlers.</p>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fas fa-clock"></i></div>
-                    <h3 class="feature-title">Real-Time Tracking</h3>
-                    <p class="feature-description">Complete audit trails with timestamps ensure transparency and accountability.</p>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
-                    <h3 class="feature-title">Mobile Optimized</h3>
-                    <p class="feature-description">Fully responsive design enables seamless access from any device.</p>
-                </div>
-                
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fas fa-bell"></i></div>
-                    <h3 class="feature-title">Instant Notifications</h3>
-                    <p class="feature-description">Automated alerts keep all stakeholders informed about resolution progress.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer id="footer" class="main-footer">
-        <div class="container text-center">
-            <p>© 2026 University Digital Intelligence. Powered by DFCMS Engine.</p>
-        </div>
-    </footer>
+                e.preventDefault();
+                const target = document.querySelector(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
