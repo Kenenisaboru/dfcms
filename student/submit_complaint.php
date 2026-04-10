@@ -85,7 +85,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmtHist->execute([$complaintId, $_SESSION['user_id']]);
 
                 // Integrated Notification System
-                NotificationManager::send($pdo, $receiver_id, "New complaint #$complaintId from " . $_SESSION['full_name'], "representative/forward.php");
+                NotificationManager::send($pdo, $receiver_id, "New complaint #$complaintId from " . $_SESSION['full_name'], "representative/forward.php", 'complaint_assigned', 'New Complaint Received');
 
                 $pdo->commit();
                 $success = "Complaint submitted and receiver notified!";

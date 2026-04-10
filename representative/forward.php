@@ -1,3 +1,5 @@
+<?php
+$page_title = "Action Hub";
 require_once '../config/config.php';
 
 // Check if user is logged in
@@ -16,36 +18,48 @@ $success = '';
 
 // Handle Forwarding Action
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['forward_action'])) {
-    // Validate CSRF
-    CSRF::validate($_POST['csrf_token']);
+    // Validate CSRF securely
+    CSRF::validateRequest();
     
-    $complaintId = $_POST['complaint_id'];
-    $targetRole = $_POST['target_role'];
-    $comment = trim($_POST['forward_comment']);
+    $complaintId = isset($_POST['complaint_id']) ? (int)$_POST['complaint_id'] : 0;
+    $targetRole = isset($_POST['target_role']) ? trim($_POST['target_role']) : '';
+    $comment = isset($_POST['forward_comment']) ? trim($_POST['forward_comment']) : '';
 
-    // ARCHITECTURAL PERMISSION CHECK
-    if (!AccessManager::canForward($role, $targetRole)) {
-        $error = "UNAUTHORIZED ROUTING: " . strtoupper($role) . " cannot forward to " . strtoupper($targetRole);
+    if ($complaintId === 0 || empty($targetRole) || empty($comment)) {
+        $error = "Please fill out all required forwarding fields.";
     } else {
-        try {
-            $pdo->beginTransaction();
-            
-            // Update complaint
-            $stmt = $pdo->prepare("UPDATE complaints SET current_handler_role = ?, status = 'Forwarded' WHERE id = ?");
-            $stmt->execute([$targetRole, $complaintId]);
+        // ARCHITECTURAL PERMISSION CHECK
+        if (!AccessManager::canForward($role, $targetRole)) {
+            $error = "UNAUTHORIZED ROUTING: " . strtoupper($role) . " cannot forward to " . strtoupper($targetRole);
+        } else {
+            try {
+                $pdo->beginTransaction();
+                
+                // Update complaint
+                $stmt = $pdo->prepare("UPDATE complaints SET current_handler_role = ?, status = 'Forwarded' WHERE id = ?");
+                $stmt->execute([$targetRole, $complaintId]);
 
-            // Add to history
-            $stmtHist = $pdo->prepare("INSERT INTO complaint_history (complaint_id, action_by, action, comments) VALUES (?, ?, 'Forwarded', ?)");
-            $stmtHist->execute([$complaintId, $userId, "Forwarded to " . strtoupper($targetRole) . ": " . $comment]);
+                // Add to history
+                $stmtHist = $pdo->prepare("INSERT INTO complaint_history (complaint_id, action_by, action, comments) VALUES (?, ?, 'Forwarded', ?)");
+                $stmtHist->execute([$complaintId, $userId, "Forwarded to " . strtoupper($targetRole) . ": " . $comment]);
 
-            // Notify Target Role (Role-based broadcast notification logic)
-            // Note: In a larger system, this would notify all users with $targetRole or a specific assigned person
-            $pdo->commit();
-            $success = "Complaint #$complaintId forwarded successfully to " . strtoupper($targetRole);
-        } catch (Exception $e) {
-            $pdo->rollBack();
-            error_log('Forward action failed: ' . $e->getMessage());
-            $error = "Operation failed. Please try again.";
+                // Notify Student that it was forwarded
+                $stmtStudent = $pdo->prepare("SELECT student_id, category FROM complaints WHERE id = ?");
+                $stmtStudent->execute([$complaintId]);
+                $comp = $stmtStudent->fetch();
+                if ($comp) {
+                    NotificationManager::send($pdo, $comp['student_id'], "Your complaint (#$complaintId) was forwarded to " . strtoupper($targetRole) . ".", "student/tracker.php?id=$complaintId", 'complaint_assigned', 'Complaint Forwarded');
+                }
+
+                $pdo->commit();
+                $success = "Complaint #$complaintId forwarded successfully to " . strtoupper($targetRole);
+            } catch (Exception $e) {
+                if ($pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                error_log('Forward action failed: ' . $e->getMessage());
+                $error = "Operation failed. Please try again.";
+            }
         }
     }
 }
