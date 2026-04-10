@@ -14,6 +14,7 @@ if (!function_exists('db_env')) {
 }
 
 $host = db_env('DB_HOST', '127.0.0.1');
+$port = db_env('DB_PORT', '3309'); // Standardized on what's working
 $db = db_env('DB_NAME', 'dfcms');
 $user = db_env('DB_USER', '');
 $pass = db_env('DB_PASS', '');
@@ -31,7 +32,7 @@ if ($user === '') {
     $user = 'root';
 }
 
-$dsn = "mysql:host={$host};dbname={$db};charset=utf8mb4";
+$dsn = "mysql:host={$host};port={$port};dbname={$db};charset=utf8mb4";
 $options = array(
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
