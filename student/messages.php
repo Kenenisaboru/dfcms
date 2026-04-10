@@ -1,7 +1,6 @@
 <?php
 // student/messages.php
-session_start();
-require_once '../config/database.php';
+require_once '../config/config.php';
 require_once '../lib/NotificationService.php';
 
 if (!isset($_SESSION['user_id'])) {
@@ -31,6 +30,7 @@ $activeReceiverId = isset($_GET['receiver_id']) ? (int) $_GET['receiver_id'] : 0
 
 // Handle message sending
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    CSRF::validateRequest();
     if ($_POST['action'] === 'send_message') {
         $receiverId = isset($_POST['receiver_id']) ? (int) $_POST['receiver_id'] : 0;
         $subject = isset($_POST['subject']) ? trim($_POST['subject']) : '';
@@ -261,6 +261,7 @@ if ($activeReceiverId > 0) {
                                 <div class="alert alert-danger py-2 mb-2"><?php echo htmlspecialchars($broadcastError); ?></div>
                             <?php endif; ?>
                             <form method="POST">
+                                <?php echo CSRF::input(); ?>
                                 <input type="hidden" name="action" value="broadcast_hod">
                                 <input type="text" name="subject" class="form-control form-control-dark mb-2" placeholder="Broadcast subject" required>
                                 <textarea name="message" class="form-control form-control-dark mb-2" rows="3" placeholder="Broadcast message to all roles..." required></textarea>
@@ -337,6 +338,7 @@ if ($activeReceiverId > 0) {
 
                         <div class="message-form">
                             <form id="messageForm" method="POST">
+                                <?php echo CSRF::input(); ?>
                                 <input type="hidden" name="action" value="send_message">
                                 <input type="hidden" name="receiver_id" value="<?php echo (int) $activeReceiverId; ?>">
                                 <div class="row g-2 align-items-center">

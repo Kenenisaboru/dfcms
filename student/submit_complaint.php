@@ -42,21 +42,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
             $size = $_FILES['attachment']['size'];
             $mime = function_exists('mime_content_type') ? @mime_content_type($_FILES['attachment']['tmp_name']) : 'unknown';
+            $allowedMime = array(
+                'jpg' => array('image/jpeg'),
+                'jpeg' => array('image/jpeg'),
+                'png' => array('image/png'),
+                'pdf' => array('application/pdf')
+            );
             // #region agent log
             DebugLogger::log('baseline', 'H4', 'student/submit_complaint.php:file-upload', 'complaint_attachment_metadata', array('ext' => $ext, 'size' => (int)$size, 'mime' => (string)$mime));
             // #endregion
 
             if (!in_array($ext, $allowed)) {
                 $error = "Invalid file type. Only JPG, PNG, and PDF allowed.";
+            } elseif (!in_array($mime, $allowedMime[$ext], true)) {
+                $error = "Invalid file content detected.";
             } elseif ($size > 5 * 1024 * 1024) {
                 $error = "File size must be under 5MB.";
             } else {
-                $uploadDir = '../assets/uploads/';
-                if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+                $uploadDir = dirname(__DIR__) . '/storage/uploads/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0750, true);
+                }
                 $newFilename = uniqid('comp_') . '.' . $ext;
                 $dest = $uploadDir . $newFilename;
                 if (move_uploaded_file($_FILES['attachment']['tmp_name'], $dest)) {
-                    $file_path = 'assets/uploads/' . $newFilename;
+                    $file_path = 'storage/uploads/' . $newFilename;
                 } else {
                     $error = "Upload failed.";
                 }
@@ -81,7 +91,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $success = "Complaint submitted and receiver notified!";
             } catch (Exception $e) {
                 $pdo->rollBack();
-                $error = "Database Error: " . $e->getMessage();
+                error_log('Complaint submit failed: ' . $e->getMessage());
+                $error = "Unable to submit complaint right now. Please try again.";
             }
         }
     }

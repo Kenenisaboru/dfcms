@@ -1,7 +1,6 @@
 <?php
 // student/notifications.php
-session_start();
-require_once '../config/database.php';
+require_once '../config/config.php';
 require_once '../lib/NotificationService.php';
 
 if (!isset($_SESSION['user_id'])) {
@@ -14,6 +13,7 @@ $notificationService = new NotificationService();
 
 // Handle marking notifications as read
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_read'])) {
+    CSRF::validateRequest();
     $notificationId = $_POST['notification_id'];
     $notificationService->markAsRead($notificationId, $userId);
     header("Location: notifications.php");
@@ -22,6 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_read'])) {
 
 // Handle marking all as read
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_all_read'])) {
+    CSRF::validateRequest();
     $notificationService->markAllAsRead($userId);
     header("Location: notifications.php");
     exit;
@@ -97,6 +98,7 @@ $unreadCount = $notificationService->getUnreadCount($userId);
                 <div>
                     <?php if ($unreadCount > 0): ?>
                         <form method="POST" class="d-inline">
+                            <?php echo CSRF::input(); ?>
                             <input type="hidden" name="mark_all_read" value="1">
                             <button type="submit" class="btn btn-sm btn-outline-success">
                                 <i class="fas fa-check-double me-2"></i>Mark All Read
@@ -178,6 +180,7 @@ $unreadCount = $notificationService->getUnreadCount($userId);
                                                     <?php if (!$notification['is_read']): ?>
                                                         <li>
                                                             <form method="POST" class="mb-0">
+                                                                <?php echo CSRF::input(); ?>
                                                                 <input type="hidden" name="mark_read" value="1">
                                                                 <input type="hidden" name="notification_id" value="<?php echo $notification['id']; ?>">
                                                                 <button type="submit" class="dropdown-item">
