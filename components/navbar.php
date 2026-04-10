@@ -2,19 +2,24 @@
 // components/navbar.php - Modern Navigation Component
 $current_role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
 $current_page = basename($_SERVER['PHP_SELF']);
+$is_landing = isset($nav_transparent) && $nav_transparent === true;
 ?>
 <!-- Modern Navigation -->
-<nav class="nav-modern">
+<nav class="nav-modern<?php echo $is_landing ? ' nav-transparent' : ''; ?>">
     <div class="nav-container">
         <a class="nav-brand" href="<?php echo $current_role ? base_url('dashboard.php') : base_url('index.php'); ?>">
             <div class="nav-brand-icon">
                 <i class="fas fa-university"></i>
             </div>
-            DFCMS
+            DFCMS<span class="dot">.</span>
         </a>
         
         <div class="nav-links">
-            <?php if ($current_role): ?>
+            <?php if ($is_landing && !$current_role): ?>
+                <a class="nav-link" href="#features">Features</a>
+                <a class="nav-link" href="#about">About</a>
+                <a class="nav-link" href="#contact">Contact</a>
+            <?php elseif ($current_role): ?>
                 <a class="nav-link <?php echo $current_page === 'dashboard.php' ? 'active' : ''; ?>" href="<?php echo base_url('dashboard.php'); ?>">
                     <i class="fas fa-home"></i> Dashboard
                 </a>
@@ -33,7 +38,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <?php endif; ?>
         </div>
         
-        <div class="flex items-center gap-3">
+        <div class="nav-actions">
             <?php if ($current_role): ?>
                 <?php 
                 $notify_path = file_exists('components/notifications.php') ? 'components/notifications.php' : '../components/notifications.php';
@@ -59,15 +64,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     </div>
                 </div>
             <?php else: ?>
-                <a href="<?php echo base_url('auth/login.php'); ?>" class="btn btn-ghost">Sign In</a>
-                <a href="<?php echo base_url('auth/register.php'); ?>" class="btn btn-primary">Get Started</a>
+                <a href="<?php echo base_url('auth/login.php'); ?>" class="btn-login">Login</a>
+                <a href="<?php echo base_url('auth/register.php'); ?>" class="link-signup">Sign Up</a>
             <?php endif; ?>
         </div>
     </div>
 </nav>
 
 <style>
-    /* Dropdown styles for modern nav */
     .dropdown-menu.show {
         display: block !important;
         animation: fadeInDown 0.2s ease-out;
