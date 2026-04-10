@@ -232,17 +232,7 @@ if ($activeReceiverId > 0) {
     </style>
 </head>
 <body class="dark-mode">
-    <nav class="main-header py-3">
-        <div class="container d-flex justify-content-between align-items-center">
-            <a href="../dashboard.php" class="text-decoration-none text-white h4 mb-0">
-                <i class="fas fa-envelope text-success me-2"></i>Messages
-            </a>
-            <div class="d-flex gap-3 align-items-center">
-                <?php include '../components/notifications.php'; ?>
-                <a href="../dashboard.php" class="btn btn-outline-light btn-sm">Dashboard</a>
-            </div>
-        </div>
-    </nav>
+    <?php include '../components/navbar.php'; ?>
 
     <div class="container" style="margin-top: 100px;">
         <div class="row">
