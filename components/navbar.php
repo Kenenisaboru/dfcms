@@ -4,7 +4,7 @@ $current_role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
 ?>
 <nav class="navbar navbar-expand-lg navbar-dark bg-glass sticky-top py-3 px-4 border-bottom border-secondary border-opacity-10">
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold text-accent d-flex align-items-center" href="<?php echo base_url('dashboard.php'); ?>">
+        <a class="navbar-brand fw-bold text-accent d-flex align-items-center" href="<?php echo $current_role ? base_url('dashboard.php') : base_url('index.php'); ?>">
             <i class="fas fa-university me-2"></i> DFCMS
         </a>
         
@@ -33,6 +33,19 @@ $current_role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
                             <a class="nav-link" href="<?php echo base_url('admin/audit_monitor.php'); ?>">Audit Monitor</a>
                         </li>
                     <?php endif; ?>
+                <?php else: ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo base_url('index.php'); ?>">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo base_url('index.php#platform'); ?>">Platform</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo base_url('index.php#features'); ?>">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo base_url('index.php#about'); ?>">About</a>
+                    </li>
                 <?php endif; ?>
             </ul>
             
