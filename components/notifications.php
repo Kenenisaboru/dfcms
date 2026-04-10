@@ -3,6 +3,19 @@
 require_once __DIR__ . '/../lib/NotificationService.php';
 require_once __DIR__ . '/../config/database.php';
 
+if (!function_exists('timeAgo')) {
+    function timeAgo($datetime) {
+        $time = strtotime($datetime);
+        $now = time();
+        $diff = $now - $time;
+        
+        if ($diff < 60) return 'Just now';
+        if ($diff < 3600) return floor($diff / 60) . ' min ago';
+        if ($diff < 86400) return floor($diff / 3600) . ' hours ago';
+        return date('M j, Y', $time);
+    }
+}
+
 $notificationService = new NotificationService();
 $userId = $_SESSION['user_id'];
 $notifications = $notificationService->getUserNotifications($userId, 5);
@@ -281,17 +294,4 @@ setInterval(() => {
 }, 4000);
 </script>
 
-<?php
-if (!function_exists('timeAgo')) {
-    function timeAgo($datetime) {
-        $time = strtotime($datetime);
-        $now = time();
-        $diff = $now - $time;
-        
-        if ($diff < 60) return 'Just now';
-        if ($diff < 3600) return floor($diff / 60) . ' min ago';
-        if ($diff < 86400) return floor($diff / 3600) . ' hours ago';
-        return date('M j, Y', $time);
-    }
-}
-?>
+
