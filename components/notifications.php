@@ -123,6 +123,8 @@ $unreadCount = $notificationService->getUnreadCount($userId);
 </style>
 
 <script>
+const csrfToken = '<?php echo CSRF::generate(); ?>';
+
 function handleNotificationClick(notificationId, type, data) {
     // Mark as read
     markNotificationRead(notificationId);
@@ -153,7 +155,10 @@ function handleNotificationClick(notificationId, type, data) {
 function markNotificationRead(notificationId) {
     fetch('../api/mark_notification_read.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+        },
         body: JSON.stringify({ notification_id: notificationId })
     }).then(response => response.json())
       .then(data => {
@@ -174,7 +179,10 @@ function markNotificationRead(notificationId) {
 function markAllNotificationsRead() {
     fetch('../api/mark_all_notifications_read.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
+        }
     }).then(response => response.json())
       .then(data => {
           if (data.success) {
