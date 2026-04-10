@@ -1,7 +1,6 @@
 <?php
 // admin/api_save_workflow.php
-session_start();
-require_once '../config/database.php';
+require_once '../config/config.php';
 
 header('Content-Type: application/json');
 
@@ -9,6 +8,13 @@ if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], array('hod', 'a
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
 }
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+    exit;
+}
+
+CSRF::validateRequest(true);
 
 $data = json_decode(file_get_contents('php://input'), true);
 
@@ -34,6 +40,7 @@ try {
     echo json_encode(['success' => true]);
 } catch (Exception $e) {
     $pdo->rollBack();
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    error_log('Workflow save failed: ' . $e->getMessage());
+    echo json_encode(['success' => false, 'message' => 'Failed to save workflow.']);
 }
 ?>

@@ -1,7 +1,6 @@
 <?php
 // admin/workflow_builder.php
-session_start();
-require_once '../config/database.php';
+require_once '../config/config.php';
 
 // Only allow HOD and admin access
 if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], array('hod', 'admin'))) {
@@ -226,7 +225,10 @@ $steps = $stmt->fetchAll();
             try {
                 const response = await fetch('api_save_workflow.php', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': '<?php echo CSRF::generate(); ?>'
+                    },
                     body: JSON.stringify({ steps })
                 });
                 const data = await response.json();
