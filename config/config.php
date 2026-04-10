@@ -19,6 +19,24 @@ require_once LIB_PATH . '/DebugLogger.php';
 $app_name = "DFCMS";
 $app_version = "1.2.0-Prod";
 
+// #region agent log
+if (!function_exists('dfcms_debug_log')) {
+    function dfcms_debug_log($runId, $hypothesisId, $location, $message, $data = array()) {
+        $payload = array(
+            'sessionId' => '78993d',
+            'runId' => (string) $runId,
+            'hypothesisId' => (string) $hypothesisId,
+            'location' => (string) $location,
+            'message' => (string) $message,
+            'data' => $data,
+            'timestamp' => round(microtime(true) * 1000)
+        );
+        @file_put_contents(ROOT_PATH . '/debug-78993d.log', json_encode($payload, JSON_UNESCAPED_SLASHES) . PHP_EOL, FILE_APPEND);
+    }
+}
+dfcms_debug_log('pre-fix', 'H1', 'config/config.php', 'bootstrap_loaded', array('hasSessionUser' => isset($_SESSION['user_id']) ? 1 : 0));
+// #endregion
+
 function env_value($key, $default = null) {
     $value = getenv($key);
     if ($value === false && isset($_ENV[$key])) {
