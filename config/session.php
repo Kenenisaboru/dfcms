@@ -2,12 +2,25 @@
 // config/session.php
 
 // Secure Session Configuration
-ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
 ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_httponly', 1);
 
-if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
-    ini_set('session.cookie_secure', 1);
+$isHttps = false;
+if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+    $isHttps = true;
+} elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower((string) $_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') {
+    $isHttps = true;
 }
+
+session_set_cookie_params(array(
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => '',
+    'secure' => $isHttps,
+    'httponly' => true,
+    'samesite' => 'Lax'
+));
 
 session_start();
 

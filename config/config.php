@@ -10,6 +10,8 @@ define('COMPONENTS_PATH', ROOT_PATH . '/components');
 // Include system essentials
 require_once CONFIG_PATH . '/session.php';
 require_once CONFIG_PATH . '/database.php';
+require_once CONFIG_PATH . '/permissions.php';
+require_once CONFIG_PATH . '/notifications.php';
 require_once LIB_PATH . '/CSRF.php';
 require_once LIB_PATH . '/DebugLogger.php';
 
@@ -17,12 +19,32 @@ require_once LIB_PATH . '/DebugLogger.php';
 $app_name = "DFCMS";
 $app_version = "1.2.0-Prod";
 
+function env_value($key, $default = null) {
+    $value = getenv($key);
+    if ($value === false && isset($_ENV[$key])) {
+        $value = $_ENV[$key];
+    }
+    if ($value === false || $value === null || $value === '') {
+        return $default;
+    }
+    return $value;
+}
+
+function app_debug() {
+    return strtolower((string) env_value('APP_DEBUG', 'false')) === 'true';
+}
+
 /**
  * Helper to get base URL (useful for redirects and links)
  */
 function base_url($path = '') {
-    // Basic root detection - can be moved to .env
-    $root = '/dfcms/'; 
+    $root = (string) env_value('APP_BASE_URL', '/dfcms/');
+    if ($root === '') {
+        $root = '/';
+    }
+    if (substr($root, -1) !== '/') {
+        $root .= '/';
+    }
     return $root . ltrim($path, '/');
 }
 
