@@ -49,8 +49,15 @@ $current_role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
                 <?php endif; ?>
             </ul>
             
-            <div class="ms-auto d-flex align-items-center">
+            <div class="ms-auto d-flex align-items-center gap-3">
                 <?php if ($current_role): ?>
+                    <?php 
+                    // Support root and subdirectory includes
+                    $notify_path = file_exists('components/notifications.php') ? 'components/notifications.php' : '../components/notifications.php';
+                    if (file_exists($notify_path)) {
+                        include $notify_path;
+                    }
+                    ?>
                     <div class="dropdown">
                         <a class="btn btn-outline-light btn-sm dropdown-toggle rounded-pill px-3" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user-circle me-1"></i> <?php echo htmlspecialchars($_SESSION['full_name']); ?>
