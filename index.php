@@ -17,11 +17,11 @@ if (function_exists('dfcms_debug_log')) {
     <div class="master-layout">
         <!-- Visual Section -->
         <div class="section-visual">
-            <div class="mb-5"><i class="fas fa-university fa-3x text-accent"></i></div>
+            <div class="mb-4"><i class="fas fa-university fa-3x text-accent"></i></div>
             <h1 class="hero-title">Shaping <br><span class="text-accent">Better Together.</span></h1>
-            <p class="hero-sub">Welcome to the Digital Feedback & Complaint Management System. A space where integrity meets technology, and every voice contributes to institutional excellence.</p>
+            <p class="hero-sub opacity-75">DFCMS provides the official centralized grievance, communication, and performance-tracking infrastructure for the University department.</p>
             
-            <div class="row w-100">
+            <div class="row w-100 mt-4">
                 <div class="col-md-6">
                     <div class="feature-card">
                         <i class="fas fa-shield-alt"></i>
@@ -51,48 +51,81 @@ if (function_exists('dfcms_debug_log')) {
                 <a href="auth/register.php" class="btn-portal btn-reg"><i class="fas fa-user-plus me-2"></i> Register Account</a>
             </div>
 
-            <div id="about" class="guidelines-section">
-                <div class="guidelines-header">
-                    <i class="fas fa-info-circle"></i>
-                    <span class="guidelines-title">SYSTEM GUIDELINES</span>
+            <!-- Platform Quick Links -->
+            <div class="quick-nav mb-5 pt-3 border-top border-secondary border-opacity-10">
+                <p class="text-dim extra-small text-uppercase fw-bold mb-3 opacity-50" style="letter-spacing: 2px;">Nav Protocols</p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="#platform" class="btn btn-sm btn-outline-secondary border-opacity-25 rounded-pill px-3 py-1 text-white hover-accent" style="font-size: 0.75rem;"><i class="fas fa-network-wired me-2 text-accent"></i>Engine</a>
+                    <a href="#features" class="btn btn-sm btn-outline-secondary border-opacity-25 rounded-pill px-3 py-1 text-white hover-accent" style="font-size: 0.75rem;"><i class="fas fa-star me-2 text-accent"></i>Capability</a>
+                    <a href="#about" class="btn btn-sm btn-outline-secondary border-opacity-25 rounded-pill px-3 py-1 text-white hover-accent" style="font-size: 0.75rem;"><i class="fas fa-shield-halved me-2 text-accent"></i>Protocols</a>
                 </div>
-                <p class="guidelines-text">
-                    Members of the Information Science department (Students, CRs, Teachers, and HODs) can utilize this platform for efficient grievance redressal. Automated workflow tracking is active for all accounts.
-                </p>
+            </div>
+
+            <div id="about" class="protocol-card mt-auto p-4 rounded-4" style="background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%); border: 1px solid rgba(16, 185, 129, 0.15);">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-accent bg-opacity-10 p-2 rounded-3 me-3">
+                        <i class="fas fa-terminal text-accent"></i>
+                    </div>
+                    <span class="fw-bold text-white small" style="letter-spacing: 1px;">ENTITY ACTION MATRIX</span>
+                </div>
+                
+                <div class="matrix-list small text-dim">
+                    <div class="mb-2 d-flex align-items-center"><i class="fas fa-circle-check text-accent me-2" style="font-size: 0.6rem;"></i> <span class="text-white me-2">Students:</span> Priority secure filing</div>
+                    <div class="mb-2 d-flex align-items-center"><i class="fas fa-circle-check text-accent me-2" style="font-size: 0.6rem;"></i> <span class="text-white me-2">CRs:</span> Tier-1 validation & routing</div>
+                    <div class="mb-2 d-flex align-items-center"><i class="fas fa-circle-check text-accent me-2" style="font-size: 0.6rem;"></i> <span class="text-white me-2">Staff:</span> Technical resolution</div>
+                    <div class="mb-0 d-flex align-items-center"><i class="fas fa-circle-check text-accent me-2" style="font-size: 0.6rem;"></i> <span class="text-white me-2">HOD:</span> Oversight & audit Control</div>
+                </div>
             </div>
             
-            <div class="copyright">
-                <p class="copyright-text">© 2026 University Intelligence Division. All rights reserved.</p>
+            <div class="copyright text-center mt-5">
+                <p class="copyright-text text-dim small">© 2026 University Intelligence Division. All rights reserved.</p>
             </div>
         </div>
     </div>
 
     <!-- Platform Section -->
-    <section id="platform" class="section-padding bg-gradient-dark">
-        <div class="container">
-            <h2 class="section-title text-center">About The Platform</h2>
-            <p class="section-subtitle text-center">
-                DFCMS is a structured digital complaint and feedback platform designed for academic institutions.
-                It connects Students, CRs, Teachers, Lab Assistants, and HOD through transparent workflow routing.
+    <section id="platform" class="section-padding bg-gradient-dark py-5">
+        <div class="container py-5">
+            <h2 class="section-title text-center text-white fw-bold mb-3"><i class="fas fa-network-wired text-accent me-2"></i>The Core Platform Engine</h2>
+            <p class="section-subtitle text-center text-dim mx-auto mb-5" style="max-width: 800px; font-size: 1.1rem;">
+                DFCMS leverages a sophisticated multi-tier routing architecture that completely eliminates the historical friction of traditional university bureaucracy. By dynamically assigning issues based on priority and category, resolutions happen in days rather than weeks.
             </p>
 
-            <div class="feature-grid">
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fas fa-sitemap"></i></div>
-                    <h3 class="feature-title">Role-Based Workflow</h3>
-                    <p class="feature-description">Complaints move through a controlled routing chain so the right person handles the issue at the right time.</p>
+            <div class="row g-4 mt-2">
+                <div class="col-md-4">
+                    <div class="p-4 rounded-4 bg-glass border border-secondary border-opacity-10 h-100 shadow-sm" style="transition: transform 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-accent bg-opacity-10 p-3 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                <i class="fas fa-sitemap text-accent fa-lg"></i>
+                            </div>
+                            <h4 class="text-white m-0" style="font-size: 1.25rem;">Role-Based Routing</h4>
+                        </div>
+                        <p class="text-dim small lh-lg mb-0">Complaints are intelligently routed through a hierarchical chain—from CR to Teacher to HOD. This guarantees that issues are filtered properly and handled contextually by the right authoritative body.</p>
+                    </div>
                 </div>
 
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fas fa-comments"></i></div>
-                    <h3 class="feature-title">Integrated Communication</h3>
-                    <p class="feature-description">Built-in messaging and notifications keep all stakeholders aligned during complaint resolution.</p>
+                <div class="col-md-4">
+                    <div class="p-4 rounded-4 bg-glass border border-secondary border-opacity-10 h-100 shadow-sm" style="transition: transform 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-info bg-opacity-10 p-3 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                <i class="fas fa-comments text-info fa-lg"></i>
+                            </div>
+                            <h4 class="text-white m-0" style="font-size: 1.25rem;">Live Unified Comm.</h4>
+                        </div>
+                        <p class="text-dim small lh-lg mb-0">Built-in secure messaging and real-time Toast notifications bridge the gap between students and higher-ups. No external emails required; everything happens seamlessly within the platform framework.</p>
+                    </div>
                 </div>
 
-                <div class="feature-item">
-                    <div class="feature-icon"><i class="fas fa-clipboard-check"></i></div>
-                    <h3 class="feature-title">Traceable Resolution</h3>
-                    <p class="feature-description">Each action is tracked in history logs to improve accountability and service quality.</p>
+                <div class="col-md-4">
+                    <div class="p-4 rounded-4 bg-glass border border-secondary border-opacity-10 h-100 shadow-sm" style="transition: transform 0.3s; cursor: default;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-warning bg-opacity-10 p-3 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                <i class="fas fa-clipboard-check text-warning fa-lg"></i>
+                            </div>
+                            <h4 class="text-white m-0" style="font-size: 1.25rem;">Immutable Audit Trail</h4>
+                        </div>
+                        <p class="text-dim small lh-lg mb-0">Every forward, resolution, and communication is permanently logged in the system's history ledger. The HOD retains full oversight capabilities, turning anecdotal complaints into measurable analytics.</p>
+                    </div>
                 </div>
             </div>
         </div>

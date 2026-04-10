@@ -38,311 +38,602 @@ if ($role == 'student') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - DFCMS</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/next-gen-ui.css" rel="stylesheet">
+    <link href="assets/css/dfcms-modern.css" rel="stylesheet">
+    
     <style>
-        :root {
-            --primary: #10b981;
-            --primary-glow: rgba(16, 185, 129, 0.4);
-            --bg-dark: #0c0d0e;
-            --card-bg: rgba(18, 18, 18, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-light: #f8fafc;
-            --text-dim: #94a3b8;
-        }
-
-        body { 
-            background-color: var(--bg-dark); 
-            background-image: 
-                radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
-            color: var(--text-light); 
-            font-family: 'Inter', sans-serif;
+        /* Dashboard Specific Styles */
+        .dashboard-page {
             display: flex;
             min-height: 100vh;
         }
-
-        .sidebar { 
-            width: 280px; 
-            background: rgba(18, 18, 18, 0.8);
-            backdrop-filter: blur(20px);
-            height: 100vh; 
-            padding: 30px 20px; 
-            border-right: 1px solid var(--glass-border); 
-            position: fixed; 
+        
+        .page-header {
+            margin-bottom: var(--space-8);
+        }
+        
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
+        }
+        
+        .page-header p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+        
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-1) var(--space-4);
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--primary-400);
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+        
+        .stat-card-modern {
+            padding: var(--space-6);
+            display: flex;
+            align-items: center;
+            gap: var(--space-5);
+        }
+        
+        .stat-icon-wrapper {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-xl);
+            flex-shrink: 0;
+        }
+        
+        .stat-icon-wrapper.primary {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(16, 185, 129, 0.05) 100%);
+            color: var(--primary-400);
+        }
+        
+        .stat-icon-wrapper.info {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.05) 100%);
+            color: var(--info);
+        }
+        
+        .stat-icon-wrapper.warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(245, 158, 11, 0.05) 100%);
+            color: var(--warning);
+        }
+        
+        .stat-icon-wrapper i {
+            font-size: 1.5rem;
+        }
+        
+        .stat-info h3 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: var(--space-1);
+        }
+        
+        .stat-info p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: var(--space-3);
+            margin-bottom: var(--space-8);
+            flex-wrap: wrap;
+        }
+        
+        .quick-action-btn {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-5);
+            background: var(--glass-highlight);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+        
+        .quick-action-btn:hover {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: var(--primary-400);
+            transform: translateY(-2px);
+        }
+        
+        .quick-action-btn i {
+            font-size: 1rem;
+        }
+        
+        /* Activity Table */
+        .activity-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-5);
+        }
+        
+        .activity-header h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        
+        .priority-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-1);
+            padding: var(--space-1) var(--space-3);
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: var(--radius-full);
+        }
+        
+        .priority-badge.high {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+        
+        .priority-badge.medium {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+        }
+        
+        .priority-badge.low {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--info);
+        }
+        
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-3);
+            background: var(--glass-highlight);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-full);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        .status-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+        
+        .status-badge.pending::before {
+            background: var(--warning);
+            box-shadow: 0 0 6px var(--warning);
+        }
+        
+        .status-badge.in-progress::before {
+            background: var(--info);
+            box-shadow: 0 0 6px var(--info);
+        }
+        
+        .status-badge.resolved::before {
+            background: var(--success);
+            box-shadow: 0 0 6px var(--success);
+        }
+        
+        /* Achievement Cards */
+        .achievement-card {
+            padding: var(--space-5);
+        }
+        
+        .achievement-list {
+            display: flex;
+            gap: var(--space-4);
+            overflow-x: auto;
+            padding-bottom: var(--space-2);
+        }
+        
+        .achievement-item {
             display: flex;
             flex-direction: column;
-            z-index: 1000;
-        }
-
-        .sidebar h4 {
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            margin-bottom: 40px;
-            padding-left: 10px;
-        }
-
-        .sidebar a { 
-            color: var(--text-dim); 
-            text-decoration: none; 
-            display: flex; 
             align-items: center;
-            padding: 12px 15px; 
-            border-radius: 12px; 
-            margin-bottom: 8px; 
-            transition: all 0.3s ease;
-            font-weight: 500;
+            text-align: center;
+            min-width: 80px;
+            padding: var(--space-4);
+            background: var(--glass-highlight);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            transition: all var(--transition-fast);
         }
-
-        .sidebar a i {
-            width: 20px;
-            margin-right: 12px;
-            font-size: 1.1rem;
-        }
-
-        .sidebar a:hover, .sidebar a.active { 
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--primary); 
-            transform: translateX(5px);
-        }
-
-        .main-content { 
-            margin-left: 280px; 
-            padding: 40px; 
-            width: calc(100% - 280px); 
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .card-custom { 
-            background: var(--card-bg); 
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border); 
-            border-radius: 20px; 
-            padding: 30px;
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
-        }
-
-        .card-custom:hover {
-            border-color: rgba(16, 185, 129, 0.3);
-            transform: translateY(-5px);
-        }
-
-        .text-accent { color: var(--primary); }
-        .text-dim { color: var(--text-dim) !important; }
         
-        .stat-label {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-            color: var(--text-dim);
-            margin-bottom: 10px;
+        .achievement-item.earned {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
         }
-
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin: 0;
+        
+        .achievement-item.earned i {
+            color: var(--primary-400);
         }
-
-        .table-dark {
-            --bs-table-bg: transparent;
-            --bs-table-border-color: var(--glass-border);
-            color: var(--text-light);
+        
+        .achievement-item:not(.earned) {
+            opacity: 0.5;
         }
-
-        .logout-link {
-            margin-top: auto;
-            color: #ef4444 !important;
+        
+        .achievement-item:not(.earned) i {
+            color: var(--text-muted);
         }
-        .logout-link:hover {
-            background: rgba(239, 68, 68, 0.1) !important;
+        
+        .achievement-item i {
+            font-size: 1.75rem;
+            margin-bottom: var(--space-2);
+        }
+        
+        .achievement-item span {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        /* Knowledge Base Preview */
+        .kb-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+        }
+        
+        .kb-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            background: var(--glass-highlight);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            transition: all var(--transition-fast);
+        }
+        
+        .kb-item:hover {
+            background: rgba(16, 185, 129, 0.05);
+            border-color: rgba(16, 185, 129, 0.3);
+            transform: translateX(4px);
+        }
+        
+        .kb-item i {
+            color: var(--primary-400);
+            font-size: 0.875rem;
+        }
+        
+        .kb-item span {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        .kb-item:hover span {
+            color: var(--text-primary);
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .activity-header {
+                flex-direction: column;
+                gap: var(--space-3);
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
-<body>
+<body class="dashboard-page">
     <!-- Mobile Navigation Toggle -->
-    <button class="menu-toggle" id="sidebarToggle">
+    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
         <i class="fas fa-bars"></i>
     </button>
 
     <!-- Sidebar Overlay for Mobile -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <div class="sidebar" id="sidebar">
-        <h4 class="text-accent d-flex align-items-center justify-content-between">
-            <span><i class="fas fa-university"></i> DFCMS</span>
-            <div class="ms-2" style="transform: scale(0.8)">
-                <?php include 'components/notifications.php'; ?>
+    <!-- Modern Sidebar -->
+    <aside class="sidebar-modern" id="sidebar">
+        <div class="sidebar-header">
+            <div class="nav-brand-icon">
+                <i class="fas fa-university"></i>
             </div>
-        </h4>
-        <a href="dashboard.php" class="active"><i class="fas fa-home"></i> Dashboard</a>
+            <span class="login-logo-text">DFCMS</span>
+        </div>
         
-        <?php if($role === 'student'): ?>
-            <a href="student/submit_complaint.php"><i class="fas fa-plus-circle"></i> Submit Complaint</a>
-            <a href="student/tracker.php"><i class="fas fa-search"></i> Track Status</a>
-        <?php endif; ?>
+        <nav class="sidebar-nav">
+            <a href="dashboard.php" class="sidebar-link active">
+                <i class="fas fa-home"></i> Dashboard
+            </a>
+            
+            <?php if($role === 'student'): ?>
+                <a href="student/submit_complaint.php" class="sidebar-link">
+                    <i class="fas fa-plus-circle"></i> Submit Complaint
+                </a>
+                <a href="student/tracker.php" class="sidebar-link">
+                    <i class="fas fa-search"></i> Track Status
+                </a>
+            <?php endif; ?>
 
-        <?php if($role === 'cr' || $role === 'teacher' || $role === 'hod'): ?>
-            <a href="representative/forward.php"><i class="fas fa-share"></i> Inbox / Forward</a>
-        <?php endif; ?>
+            <?php if($role === 'cr' || $role === 'teacher' || $role === 'hod'): ?>
+                <a href="representative/forward.php" class="sidebar-link">
+                    <i class="fas fa-inbox"></i> Inbox / Forward
+                </a>
+            <?php endif; ?>
 
-        <?php if($role === 'teacher' || $role === 'hod'): ?>
-            <a href="teacher/assign_lab.php"><i class="fas fa-tasks"></i> Assign Tasks</a>
-        <?php endif; ?>
+            <?php if($role === 'teacher' || $role === 'hod'): ?>
+                <a href="teacher/assign_lab.php" class="sidebar-link">
+                    <i class="fas fa-tasks"></i> Assign Tasks
+                </a>
+            <?php endif; ?>
+            
+            <div class="divider" style="margin: var(--space-4) 0;"></div>
+            
+            <a href="student/notifications.php" class="sidebar-link">
+                <i class="fas fa-bell"></i> Notifications
+            </a>
+            <a href="student/messages.php" class="sidebar-link">
+                <i class="fas fa-envelope"></i> Messages
+            </a>
+            <a href="student/badges.php" class="sidebar-link">
+                <i class="fas fa-medal"></i> Achievements
+            </a>
+            <a href="student/knowledge_base.php" class="sidebar-link">
+                <i class="fas fa-book"></i> Knowledge Base
+            </a>
+        </nav>
         
-        <!-- Quick Links -->
-        <hr class="border-secondary my-3">
-        <h6 class="text-dim text-uppercase small mb-3">Quick Access</h6>
-        <a href="student/notifications.php"><i class="fas fa-bell"></i> All Alerts</a>
-        <a href="student/messages.php"><i class="fas fa-envelope"></i> Secure Chat</a>
-        <a href="student/badges.php"><i class="fas fa-medal"></i> Achievements</a>
-        <a href="student/knowledge_base.php"><i class="fas fa-book"></i> Help Guides</a>
-        
-        <a href="auth/logout.php" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
-    </div>
+        <div class="sidebar-footer">
+            <a href="auth/logout.php" class="sidebar-link" style="color: var(--danger);">
+                <i class="fas fa-sign-out-alt"></i> Sign Out
+            </a>
+        </div>
+    </aside>
 
-    <div class="main-content">
-        <div class="mb-5">
-            <h2 class="fw-bold">Welcome, <?php echo htmlspecialchars($userName); ?></h2>
-            <p class="text-dim">You are logged in as <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3"><?php echo strtoupper($role); ?></span></p>
+    <!-- Main Content -->
+    <main class="main-with-sidebar">
+        <!-- Page Header -->
+        <header class="page-header animate-fade-in-down">
+            <h1>Welcome back, <?php echo htmlspecialchars($userName); ?></h1>
+            <p>
+                You're signed in as 
+                <span class="role-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    <?php echo ucfirst($role); ?>
+                </span>
+            </p>
+        </header>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions animate-fade-in-up">
+            <?php if($role === 'student'): ?>
+                <a href="student/submit_complaint.php" class="quick-action-btn">
+                    <i class="fas fa-plus-circle"></i>
+                    Submit Complaint
+                </a>
+            <?php endif; ?>
+            <a href="student/tracker.php" class="quick-action-btn">
+                <i class="fas fa-search"></i>
+                Track Status
+            </a>
+            <a href="student/notifications.php" class="quick-action-btn">
+                <i class="fas fa-bell"></i>
+                View Notifications
+            </a>
+            <a href="student/knowledge_base.php" class="quick-action-btn">
+                <i class="fas fa-question-circle"></i>
+                Get Help
+            </a>
         </div>
 
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card card-custom">
-                    <p class="stat-label">Active Complaints</p>
-                    <h2 class="stat-value text-accent"><?php echo $totalComplaints; ?></h2>
-                    <p class="text-dim small mt-2">Actionable requests within your scope</p>
+        <!-- Stats Grid -->
+        <div class="stats-grid stagger-children">
+            <div class="card glass-card stat-card-modern">
+                <div class="stat-icon-wrapper primary">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <div class="stat-info">
+                    <h3><?php echo $totalComplaints; ?></h3>
+                    <p>Active Complaints</p>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card card-custom">
-                    <p class="stat-label">Notifications</p>
-                    <h2 class="stat-value text-white"><?php
+            
+            <div class="card glass-card stat-card-modern">
+                <div class="stat-icon-wrapper info">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="stat-info">
+                    <h3><?php
                         $notificationService = new NotificationService();
                         echo $notificationService->getUnreadCount($userId);
-                    ?></h2>
-                    <p class="text-dim small mt-2">Unread messages and alerts</p>
+                    ?></h3>
+                    <p>Unread Notifications</p>
+                </div>
+            </div>
+            
+            <div class="card glass-card stat-card-modern">
+                <div class="stat-icon-wrapper warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3><?php echo count($activities); ?></h3>
+                    <p>Recent Activity</p>
                 </div>
             </div>
         </div>
 
-        <!-- Engagement Section: Badges & Knowledge Base -->
-        <div class="row g-4 mb-4 mt-4">
-            <div class="col-md-6">
-                <div class="card card-custom h-100">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0"><i class="fas fa-medal text-warning me-2"></i>My Achievements</h5>
-                        <a href="student/badges.php" class="btn btn-sm btn-outline-success">View All</a>
+        <!-- Secondary Content Grid -->
+        <div class="row g-4" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-6); margin-bottom: var(--space-8);">
+            <!-- Achievements Card -->
+            <div class="animate-fade-in-up" style="animation-delay: 0.1s;">
+                <div class="card achievement-card">
+                    <div class="activity-header">
+                        <h3><i class="fas fa-medal text-warning me-2"></i>My Achievements</h3>
+                        <a href="student/badges.php" class="btn btn-sm btn-secondary">View All</a>
                     </div>
-                    <div class="badge-container d-flex gap-3 overflow-auto pb-2">
-                        <div class="badge-item earned text-center" style="min-width: 80px;">
-                            <i class="fas fa-bullhorn fa-2x text-success mb-1"></i>
-                            <div class="small">First Voice</div>
+                    <div class="achievement-list">
+                        <div class="achievement-item earned">
+                            <i class="fas fa-bullhorn"></i>
+                            <span>First Voice</span>
                         </div>
-                        <div class="badge-item text-center opacity-50" style="min-width: 80px;">
-                            <i class="fas fa-check-circle fa-2x text-secondary mb-1"></i>
-                            <div class="small">Solver</div>
+                        <div class="achievement-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Solver</span>
                         </div>
-                        <div class="badge-item text-center opacity-50" style="min-width: 80px;">
-                            <i class="fas fa-bolt fa-2x text-secondary mb-1"></i>
-                            <div class="small">Fast Track</div>
+                        <div class="achievement-item">
+                            <i class="fas fa-bolt"></i>
+                            <span>Fast Track</span>
+                        </div>
+                        <div class="achievement-item">
+                            <i class="fas fa-star"></i>
+                            <span>Top Contributor</span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card card-custom h-100">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0"><i class="fas fa-book-open text-info me-2"></i>Knowledge Base</h5>
-                        <a href="student/knowledge_base.php" class="btn btn-sm btn-outline-info">Browse</a>
+            
+            <!-- Knowledge Base Card -->
+            <div class="animate-fade-in-up" style="animation-delay: 0.2s;">
+                <div class="card achievement-card">
+                    <div class="activity-header">
+                        <h3><i class="fas fa-book-open text-info me-2"></i>Knowledge Base</h3>
+                        <a href="student/knowledge_base.php" class="btn btn-sm btn-secondary">Browse</a>
                     </div>
-                    <p class="text-dim small mb-3">Quick answers to common questions and system guides.</p>
-                    <div class="list-group list-group-flush bg-transparent">
-                        <a href="student/knowledge_base.php?category=general" class="list-group-item list-group-item-action bg-transparent text-light border-secondary small py-2">
-                            <i class="fas fa-chevron-right me-2 text-info"></i>How to submit a complaint
+                    <p class="text-secondary mb-4">Quick answers to common questions and system guides.</p>
+                    <div class="kb-list">
+                        <a href="student/knowledge_base.php?category=general" class="kb-item">
+                            <i class="fas fa-chevron-right"></i>
+                            <span>How to submit a complaint</span>
                         </a>
-                        <a href="student/knowledge_base.php?category=technical" class="list-group-item list-group-item-action bg-transparent text-light border-secondary small py-2">
-                            <i class="fas fa-chevron-right me-2 text-info"></i>Password Reset Guide
+                        <a href="student/knowledge_base.php?category=technical" class="kb-item">
+                            <i class="fas fa-chevron-right"></i>
+                            <span>Password Reset Guide</span>
+                        </a>
+                        <a href="student/knowledge_base.php?category=general" class="kb-item">
+                            <i class="fas fa-chevron-right"></i>
+                            <span>Understanding complaint statuses</span>
                         </a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card card-custom mt-5">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-bold m-0">Recent Activity Overview</h4>
-                <a href="<?php echo $role === 'student' ? 'student/tracker.php' : 'representative/forward.php'; ?>" class="btn btn-sm btn-outline-success rounded-pill px-3">View Full List</a>
+        <!-- Recent Activity -->
+        <div class="card glass-card animate-fade-in-up" style="animation-delay: 0.3s;">
+            <div class="activity-header">
+                <h3><i class="fas fa-history text-accent me-2"></i>Recent Activity</h3>
+                <a href="<?php echo $role === 'student' ? 'student/tracker.php' : 'representative/forward.php'; ?>" class="btn btn-sm btn-secondary">
+                    View All
+                </a>
             </div>
-            <p class="text-dim">Displaying operations scoped to your access level.</p>
-            <div class="table-responsive">
-                <table class="table table-dark table-hover mt-3">
-                    <thead>
-                        <tr>
-                            <th class="text-dim small text-uppercase">ID</th>
-                            <th class="text-dim small text-uppercase">Category</th>
-                            <th class="text-dim small text-uppercase">Priority</th>
-                            <th class="text-dim small text-uppercase">Status</th>
-                            <th class="text-dim small text-uppercase text-end">Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($activities)): ?>
+            
+            <?php if (empty($activities)): ?>
+                <div class="empty-state" style="padding: var(--space-12) var(--space-8);">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <h4 class="empty-state-title">No Recent Activity</h4>
+                    <p class="empty-state-description">Your recent complaints and actions will appear here once you start using the system.</p>
+                </div>
+            <?php else: ?>
+                <div class="table-container">
+                    <table class="table-modern">
+                        <thead>
                             <tr>
-                                <td colspan="5" class="text-center text-dim py-5">
-                                    <i class="fas fa-history fa-2x mb-3 opacity-25"></i>
-                                    <p>No recent activity found in your workflow.</p>
-                                </td>
+                                <th>ID</th>
+                                <th>Category</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th class="text-end">Date</th>
                             </tr>
-                        <?php else: ?>
+                        </thead>
+                        <tbody>
                             <?php foreach ($activities as $act): ?>
                                 <tr>
                                     <td class="fw-bold">#<?php echo $act['id']; ?></td>
                                     <td><?php echo htmlspecialchars($act['category']); ?></td>
                                     <td>
-                                        <span class="badge rounded-pill bg-<?php echo strtolower($act['priority']) === 'high' ? 'danger' : (strtolower($act['priority']) === 'medium' ? 'warning text-dark' : 'info'); ?> px-2">
+                                        <span class="priority-badge <?php echo strtolower($act['priority']); ?>">
                                             <?php echo $act['priority']; ?>
                                         </span>
                                     </td>
-                                    <td><span class="text-accent"><?php echo $act['status']; ?></span></td>
-                                    <td class="text-end text-dim small"><?php echo date('M j, Y', strtotime($act['created_at'])); ?></td>
+                                    <td>
+                                        <span class="status-badge <?php echo strtolower(str_replace(' ', '-', $act['status'])); ?>">
+                                            <?php echo $act['status']; ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-end text-tertiary">
+                                        <?php echo date('M j, Y', strtotime($act['created_at'])); ?>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
         </div>
-    </div>
+    </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/next-gen-ui.js"></script>
+    <!-- Modern UI Framework -->
+    <script src="assets/js/dfcms-ui.js"></script>
+    
     <script>
+        // Initialize sidebar
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('sidebarToggle');
         const overlay = document.getElementById('sidebarOverlay');
 
         if (toggleBtn) {
             toggleBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
+                sidebar.classList.toggle('open');
                 overlay.classList.toggle('show');
+                document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
             });
         }
+        
         if (overlay) {
             overlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
+                sidebar.classList.remove('open');
                 overlay.classList.remove('show');
+                document.body.style.overflow = '';
             });
         }
+
+        // Welcome toast for returning users
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                DFCMS.toast.success('Welcome back!', 'You have successfully signed in.', { duration: 3000 });
+            }, 1000);
+        });
     </script>
 </body>
 </html>
