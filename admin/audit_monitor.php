@@ -1,11 +1,7 @@
-<?php
-// admin/audit_monitor.php
-session_start();
-require_once '../config/database.php';
+require_once '../config/config.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'hod') {
-    die("Access Denied: Super Admin / Department Head access only.");
-}
+// Check if user is logged in as HOD
+check_login('hod');
 
 // Fetch Comprehensive Global Complaint Statistics
 $stats = [
@@ -28,31 +24,12 @@ $stmtHist = $pdo->query("SELECT h.*, u.full_name as actor_name, u.role as actor_
                         ORDER BY h.action_date DESC LIMIT 30");
 $auditLogs = $stmtHist->fetchAll();
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Global Audit Monitor - DFCMS</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #0c0d0e; color: #fff; font-family: 'Inter', sans-serif; }
-        .navbar-custom { background-color: #121212; border-bottom: 1px solid #333; }
-        .card-stat { background-color: #121212; border: 1px solid #333; border-radius: 12px; padding: 25px; transition: 0.3s; }
-        .card-stat:hover { transform: translateY(-5px); border-color: #10b981; }
-        .card-table { background-color: #121212; border: 1px solid #333; border-radius: 12px; padding: 30px; margin-top: 30px; }
-        .table-dark { --bs-table-bg: #121212; }
-        .text-accent { color: #10b981; }
-        .badge-status { font-size: 10px; padding: 5px 10px; border-radius: 20px; }
-        .audit-log-item { border-left: 3px solid #333; padding-left: 15px; margin-bottom: 20px; position: relative; }
-        .audit-log-item::before { content: ''; position: absolute; left: -7px; top: 0; width: 11px; height: 11px; background: #10b981; border-radius: 50%; }
-    </style>
-</head>
+<?php
+$page_title = "Global Audit Monitor";
+include '../components/head.php';
+?>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom px-4">
-        <a class="navbar-brand text-accent fw-bold" href="../dashboard.php">DFCMS ADMIN</a>
-        <div class="ms-auto"><a href="../dashboard.php" class="btn btn-outline-light btn-sm"><i class="fas fa-arrow-left"></i> Back to Dashboard</a></div>
-    </nav>
+    <?php include '../components/navbar.php'; ?>
 
     <div class="container-fluid px-5 my-5">
         <div class="row align-items-end mb-4">
