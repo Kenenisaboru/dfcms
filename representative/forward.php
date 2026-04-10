@@ -44,7 +44,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['forward_action'])) {
             $success = "Complaint #$complaintId forwarded successfully to " . strtoupper($targetRole);
         } catch (Exception $e) {
             $pdo->rollBack();
-            $error = "Operation failed: " . $e->getMessage();
+            error_log('Forward action failed: ' . $e->getMessage());
+            $error = "Operation failed. Please try again.";
         }
     }
 }

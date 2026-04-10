@@ -1,9 +1,6 @@
 <?php
 // teacher/assign_lab.php
-session_start();
-require_once '../config/database.php';
-require_once '../config/permissions.php';
-require_once '../config/notifications.php';
+require_once '../config/config.php';
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: ../auth/login.php");
@@ -23,6 +20,7 @@ $success = '';
 
 // Handle Lab Assignment
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_task'])) {
+    CSRF::validateRequest();
     $complaintId = $_POST['complaint_id'];
     $labAssistantId = $_POST['lab_assistant_id'];
     $instruction = trim($_POST['instruction']);
@@ -54,7 +52,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['assign_task'])) {
         }
     } catch (Exception $e) {
         $pdo->rollBack();
-        $error = "Assignment failed: " . $e->getMessage();
+        error_log('Lab assignment failed: ' . $e->getMessage());
+        $error = "Assignment failed. Please try again.";
     }
 }
 
@@ -113,6 +112,7 @@ $labAssistants = $stmtLab->fetchAll();
                     </div>
                     
                     <form method="POST" class="border-top pt-4 border-secondary">
+                        <?php echo CSRF::input(); ?>
                         <input type="hidden" name="complaint_id" value="<?php echo $c['id']; ?>">
                         <div class="row g-3">
                             <div class="col-md-4">
