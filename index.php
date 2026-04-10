@@ -46,7 +46,7 @@ include 'components/head.php';
                 <a href="auth/register.php" class="btn-portal btn-reg"><i class="fas fa-user-plus me-2"></i> Register Account</a>
             </div>
 
-            <div class="guidelines-section">
+            <div id="about" class="guidelines-section">
                 <div class="guidelines-header">
                     <i class="fas fa-info-circle"></i>
                     <span class="guidelines-title">SYSTEM GUIDELINES</span>
@@ -61,6 +61,37 @@ include 'components/head.php';
             </div>
         </div>
     </div>
+
+    <!-- Platform Section -->
+    <section id="platform" class="section-padding bg-gradient-dark">
+        <div class="container">
+            <h2 class="section-title text-center">About The Platform</h2>
+            <p class="section-subtitle text-center">
+                DFCMS is a structured digital complaint and feedback platform designed for academic institutions.
+                It connects Students, CRs, Teachers, Lab Assistants, and HOD through transparent workflow routing.
+            </p>
+
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fas fa-sitemap"></i></div>
+                    <h3 class="feature-title">Role-Based Workflow</h3>
+                    <p class="feature-description">Complaints move through a controlled routing chain so the right person handles the issue at the right time.</p>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fas fa-comments"></i></div>
+                    <h3 class="feature-title">Integrated Communication</h3>
+                    <p class="feature-description">Built-in messaging and notifications keep all stakeholders aligned during complaint resolution.</p>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fas fa-clipboard-check"></i></div>
+                    <h3 class="feature-title">Traceable Resolution</h3>
+                    <p class="feature-description">Each action is tracked in history logs to improve accountability and service quality.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Features Section -->
     <section id="features" class="section-padding bg-gradient-dark">
@@ -109,7 +140,7 @@ include 'components/head.php';
     </section>
 
     <!-- Footer -->
-    <footer class="main-footer">
+    <footer id="footer" class="main-footer">
         <div class="container text-center">
             <p>© 2026 University Digital Intelligence. Powered by DFCMS Engine.</p>
         </div>
