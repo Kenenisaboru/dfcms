@@ -7,16 +7,16 @@ if (isset($_SESSION['user_id'])) {
 }
 
 $error = '';
+$emailValue = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Validate CSRF
     CSRF::validate($_POST['csrf_token']);
     
     $email = trim($_POST['email']);
     $password = $_POST['password'];
-    // #region agent log
+    $emailValue = $email;
+    
     DebugLogger::log('baseline', 'H5', 'auth/login.php:POST', 'login_attempt', array('emailHash' => substr(sha1(strtolower($email)), 0, 12), 'passwordLen' => strlen((string)$password)));
-    // #endregion
 
     if (empty($email) || empty($password)) {
         $error = "Please fill in all fields.";
@@ -28,9 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
-            // #region agent log
             DebugLogger::log('baseline', 'H5', 'auth/login.php:POST', 'login_success', array('userId' => (int)$user['id'], 'role' => (string)$user['role']));
-            // #endregion
             session_regenerate_id(true);
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['full_name'] = $user['full_name'];
@@ -38,9 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: ../dashboard.php");
             exit;
         } else {
-            // #region agent log
             DebugLogger::log('baseline', 'H5', 'auth/login.php:POST', 'login_failed', array('emailHash' => substr(sha1(strtolower($email)), 0, 12)));
-            // #endregion
             $error = "Invalid email or password.";
         }
     }
@@ -51,182 +47,493 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - DFCMS</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="description" content="DFCMS - Digital Feedback & Complaint Management System Login">
+    <title>Sign In | DFCMS</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Modern Design System -->
+    <link href="../assets/css/dfcms-modern.css" rel="stylesheet">
+    
     <style>
-        :root {
-            --primary: #10b981;
-            --primary-glow: rgba(16, 185, 129, 0.4);
-            --bg-dark: #0c0d0e;
-            --card-bg: rgba(18, 18, 18, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-light: #f8fafc;
-            --text-dim: #94a3b8;
-        }
-
-        body { 
-            background-color: var(--bg-dark); 
-            color: var(--text-light); 
-            font-family: 'Inter', sans-serif;
-            margin: 0; 
-            padding: 0; 
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .main-wrapper {
+        .login-page {
+            min-height: 100vh;
             display: flex;
-            width: 100%;
-            height: 100vh;
+            background: var(--bg-primary);
         }
-
-        .content-left {
-            flex: 1.2;
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(0, 0, 0, 0.9)), url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
-            background-position: center;
+        
+        .login-visual {
+            flex: 1.3;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 80px;
-            color: #fff;
-            animation: fadeIn 1s ease-out;
+            padding: var(--space-16);
+            background: 
+                linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(0, 0, 0, 0.85) 100%),
+                url('https://images.unsplash.com/photo-1434030216411-0b793f4b4173?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
         }
-
-        .content-right {
-            flex: 0.8;
-            background-color: var(--bg-dark);
-            background-image: radial-gradient(circle at center, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+        
+        .login-visual::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 70% 30%, rgba(16, 185, 129, 0.2) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        
+        .login-visual-content {
+            position: relative;
+            z-index: 1;
+            max-width: 540px;
+        }
+        
+        .login-visual-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-4);
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--primary-400);
+            margin-bottom: var(--space-6);
+        }
+        
+        .login-visual h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: var(--space-6);
+        }
+        
+        .login-visual p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            max-width: 480px;
+        }
+        
+        .login-visual-features {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+            margin-top: var(--space-10);
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+        }
+        
+        .feature-icon {
+            width: 48px;
+            height: 48px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 40px;
-            border-left: 1px solid var(--glass-border);
-            animation: slideIn 0.8s ease-out;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: var(--radius-lg);
+            color: var(--primary-400);
+            font-size: 1.25rem;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        
+        .feature-text {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
         }
-
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(50px); }
-            to { opacity: 1; transform: translateX(0); }
+        
+        .feature-text strong {
+            color: var(--text-primary);
+            display: block;
+            margin-bottom: var(--space-1);
         }
-
-        .glass-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 40px;
+        
+        .login-form-section {
+            flex: 0.7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-8);
+            background: 
+                radial-gradient(ellipse at center, rgba(16, 185, 129, 0.03) 0%, transparent 70%);
+            position: relative;
+        }
+        
+        .login-card {
             width: 100%;
-            max-width: 450px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            max-width: 420px;
+            padding: var(--space-10);
         }
-
-        .form-label { 
-            color: var(--text-light) !important; 
-            font-size: 0.85rem;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: var(--space-8);
         }
-
-        .form-control { 
-            background-color: #eef2f7 !important; 
-            border: 1px solid var(--glass-border) !important; 
-            color: #1e293b !important; 
-            padding: 14px 18px;
-            border-radius: 12px;
-            transition: all 0.3s ease;
+        
+        .login-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-3);
+            margin-bottom: var(--space-6);
         }
-
-        .form-control:focus { 
-            box-shadow: 0 0 0 4px var(--primary-glow) !important;
-            border-color: var(--primary) !important;
+        
+        .login-logo-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+            border-radius: var(--radius-lg);
+            color: white;
+            font-size: 1.5rem;
         }
-
-        .btn-primary { 
-            background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
-            border: none; 
-            padding: 16px;
+        
+        .login-logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+        
+        .login-header h2 {
+            font-size: 1.75rem;
             font-weight: 700;
-            border-radius: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
         }
-
-        .btn-primary:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 10px 20px -5px var(--primary-glow);
-            color: #fff;
+        
+        .login-header p {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
         }
-
-        .text-accent { color: var(--primary) !important; }
-        .text-dim { color: var(--text-dim) !important; }
-
-        .quote-icon { font-size: 3rem; color: var(--primary); margin-bottom: 20px; opacity: 0.5; }
-        .motivational-speech h1 { font-size: 3.5rem; font-weight: 800; margin-bottom: 20px; line-height: 1.1; }
-        .motivational-speech p { font-size: 1.2rem; color: #cbd5e1; line-height: 1.6; max-width: 600px; }
-
-        @media (max-width: 992px) {
-            .content-left { display: none; }
-            .content-right { flex: 1; border-left: none; }
+        
+        .form-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-6);
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        
+        .forgot-password {
+            font-size: 0.875rem;
+            color: var(--primary-400);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color var(--transition-fast);
+        }
+        
+        .forgot-password:hover {
+            color: var(--primary-300);
+        }
+        
+        .login-footer {
+            text-align: center;
+            margin-top: var(--space-8);
+            padding-top: var(--space-6);
+            border-top: 1px solid var(--glass-border);
+        }
+        
+        .login-footer p {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+        }
+        
+        .login-footer a {
+            color: var(--primary-400);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color var(--transition-fast);
+        }
+        
+        .login-footer a:hover {
+            color: var(--primary-300);
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-top: var(--space-4);
+            font-size: 0.875rem;
+            color: var(--text-tertiary);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+        
+        .back-link:hover {
+            color: var(--text-secondary);
+        }
+        
+        /* Error shake animation */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+            20%, 40%, 60%, 80% { transform: translateX(4px); }
+        }
+        
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .login-visual {
+                flex: 1;
+                padding: var(--space-10);
+            }
+            
+            .login-visual h1 {
+                font-size: 2.5rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .login-visual {
+                display: none;
+            }
+            
+            .login-form-section {
+                flex: 1;
+                padding: var(--space-6);
+            }
+            
+            .login-card {
+                padding: var(--space-6);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="main-wrapper">
-        <div class="content-left">
-            <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
-            <div class="motivational-speech">
-                <h1 class="text-white">Action Begins <br><span class="text-accent">With You.</span></h1>
-                <p>Welcome back to the Digital Feedback & Complaint Management System. Success isn't about avoiding obstacles; it's about resolving them together with transparent communication.</p>
-                <div class="mt-4 d-flex align-items-center">
-                    <div style="width: 50px; height: 3px; background: var(--primary); margin-right: 15px; border-radius: 2px;"></div>
-                    <span class="text-uppercase fw-bold text-accent" style="letter-spacing: 2px;">Excellence Through Feedback</span>
+    <main class="login-page">
+        <!-- Visual Side -->
+        <section class="login-visual animate-fade-in">
+            <div class="login-visual-content">
+                <div class="login-visual-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    Secure & Encrypted
+                </div>
+                <h1>Action Begins<br><span class="text-accent">With You.</span></h1>
+                <p>Welcome back to the Digital Feedback & Complaint Management System. Transform your feedback into actionable solutions through transparent communication.</p>
+                
+                <div class="login-visual-features">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div class="feature-text">
+                            <strong>Lightning Fast</strong>
+                            Instant complaint routing and real-time status updates
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="feature-text">
+                            <strong>End-to-End Encrypted</strong>
+                            Your data is protected with enterprise-grade security
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="feature-text">
+                            <strong>Real-time Analytics</strong>
+                            Track resolution progress and system performance
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <div class="content-right">
-            <div class="glass-card">
-                <div class="text-center mb-4">
-                    <h2 class="fw-bold text-white mb-2">Sign In</h2>
-                    <p class="text-dim">Access Your Secure <span class="text-accent fw-bold">DFCMS</span> Hub.</p>
+        </section>
+        
+        <!-- Form Side -->
+        <section class="login-form-section">
+            <div class="card glass-card login-card animate-slide-in-right">
+                <div class="login-header">
+                    <div class="login-logo">
+                        <div class="login-logo-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <span class="login-logo-text">DFCMS</span>
+                    </div>
+                    <h2>Welcome Back</h2>
+                    <p>Sign in to access your dashboard</p>
                 </div>
                 
                 <?php if ($error): ?>
-                    <div class="alert alert-danger py-2 border-0 bg-danger bg-opacity-10 text-danger small"><?php echo htmlspecialchars($error); ?></div>
+                    <div class="alert alert-danger mb-6" role="alert">
+                        <div class="alert-icon">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <div class="alert-title">Authentication Failed</div>
+                            <?php echo htmlspecialchars($error); ?>
+                        </div>
+                    </div>
                 <?php endif; ?>
                 
-                <form method="POST" action="">
+                <form method="POST" action="" id="loginForm" novalidate>
                     <?php echo CSRF::input(); ?>
-                    <div class="mb-3">
-                        <label class="form-label"><i class="fas fa-envelope text-accent me-1"></i> Registered Email Address</label>
-                        <input type="email" name="email" class="form-control" placeholder="example@university.edu" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label"><i class="fas fa-lock text-accent me-1"></i> Password</label>
-                        <input type="password" name="password" class="form-control" placeholder="••••••••••••" required>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="email">
+                            <i class="fas fa-envelope text-accent me-2"></i>Email Address
+                        </label>
+                        <div class="input-group">
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input 
+                                type="email" 
+                                id="email"
+                                name="email" 
+                                class="form-input" 
+                                placeholder="you@university.edu"
+                                value="<?php echo htmlspecialchars($emailValue); ?>"
+                                required
+                                autocomplete="email"
+                            >
+                        </div>
+                        <div class="form-feedback" id="email-feedback"></div>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary w-100 mb-4"><i class="fas fa-sign-in-alt me-2"></i> Enter Dashboard</button>
+                    <div class="form-group">
+                        <label class="form-label" for="password">
+                            <i class="fas fa-lock text-accent me-2"></i>Password
+                        </label>
+                        <div class="input-group">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input 
+                                type="password" 
+                                id="password"
+                                name="password" 
+                                class="form-input" 
+                                placeholder="Enter your password"
+                                required
+                                autocomplete="current-password"
+                            >
+                            <button type="button" class="btn btn-ghost btn-icon" id="togglePassword" style="position: absolute; right: var(--space-3); top: 50%; transform: translateY(-50%);" aria-label="Toggle password visibility">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-feedback" id="password-feedback"></div>
+                    </div>
                     
-                    <div class="text-center mt-3">
-                        <span class="text-dim small">New to the system? </span><a href="register.php" class="text-decoration-none text-accent fw-bold small">Create Account</a>
+                    <div class="form-options">
+                        <label class="remember-me">
+                            <input type="checkbox" name="remember" class="form-check-input">
+                            <span>Remember me</span>
+                        </label>
+                        <a href="#" class="forgot-password">Forgot password?</a>
                     </div>
-                    <div class="text-center mt-3">
-                        <a href="../index.php" class="text-decoration-none text-dim small hover-accent"><i class="fas fa-arrow-left me-1"></i> Back to Landing</a>
-                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Sign In
+                    </button>
                 </form>
+                
+                <div class="login-footer">
+                    <p>Don't have an account? <a href="register.php">Create one now</a></p>
+                    <a href="../index.php" class="back-link">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Home
+                    </a>
+                </div>
             </div>
-        </div>
-    </div>
+        </section>
+    </main>
+    
+    <!-- Modern UI Framework -->
+    <script src="../assets/js/dfcms-ui.js"></script>
+    
+    <script>
+        (function() {
+            const form = document.getElementById('loginForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            
+            // Password visibility toggle
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.querySelector('i').classList.toggle('fa-eye');
+                this.querySelector('i').classList.toggle('fa-eye-slash');
+            });
+            
+            // Form validation
+            const validator = new DFCMS.FormValidator(form, {
+                validateOnBlur: true,
+                showInlineErrors: true
+            });
+            
+            validator.rules({
+                email: {
+                    required: true,
+                    email: true,
+                    requiredMessage: 'Please enter your email address',
+                    emailMessage: 'Please enter a valid email address'
+                },
+                password: {
+                    required: true,
+                    minLength: 1,
+                    requiredMessage: 'Please enter your password'
+                }
+            });
+            
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                if (!validator.validate()) {
+                    e.preventDefault();
+                    
+                    // Shake animation on error
+                    form.closest('.glass-card').classList.add('shake');
+                    setTimeout(() => {
+                        form.closest('.glass-card').classList.remove('shake');
+                    }, 500);
+                    
+                    // Show toast notification
+                    DFCMS.toast.error('Please correct the errors before signing in.');
+                    return;
+                }
+                
+                // Show loading state
+                const restoreButton = DFCMS.LoadingManager.button(submitBtn, 'Signing in...');
+                
+                // Form will submit normally
+            });
+            
+            // Focus email field on load
+            document.getElementById('email').focus();
+        })();
+    </script>
 </body>
 </html>
