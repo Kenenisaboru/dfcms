@@ -52,24 +52,29 @@ class EngagementService {
      * Knowledge Base
      */
     public function getKBArticles($category = null, $search = null) {
-        $sql = "SELECT * FROM knowledge_base WHERE is_published = 1";
-        $params = array();
+        try {
+            $sql = "SELECT * FROM knowledge_base WHERE is_published = 1";
+            $params = array();
 
-        if ($category) {
-            $sql .= " AND category = ?";
-            $params[] = $category;
+            if ($category) {
+                $sql .= " AND category = ?";
+                $params[] = $category;
+            }
+
+            if ($search) {
+                $sql .= " AND (title LIKE ? OR content LIKE ?)";
+                $params[] = "%$search%";
+                $params[] = "%$search%";
+            }
+
+            $sql .= " ORDER BY views DESC";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetchAll();
+        } catch (Throwable $e) {
+            // Return empty if table doesn't exist yet
+            return array();
         }
-
-        if ($search) {
-            $sql .= " AND (title LIKE ? OR content LIKE ?)";
-            $params[] = "%$search%";
-            $params[] = "%$search%";
-        }
-
-        $sql .= " ORDER BY views DESC";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll();
     }
 
     /**
