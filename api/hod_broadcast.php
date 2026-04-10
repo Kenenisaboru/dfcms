@@ -1,14 +1,14 @@
 <?php
 header('Content-Type: application/json');
-session_start();
+require_once '../config/config.php';
 
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role'])) {
     echo json_encode(array('success' => false, 'message' => 'Unauthorized'));
     exit;
 }
 
-require_once '../config/database.php';
 require_once '../lib/NotificationService.php';
+CSRF::validateRequest(true);
 
 $role = strtolower(trim((string) $_SESSION['role']));
 if (in_array($role, array('department_head', 'department head', 'head_of_department'), true)) {
@@ -37,6 +37,6 @@ if ($sentCount > 0) {
 $error = trim($notificationService->getLastError());
 echo json_encode(array(
     'success' => false,
-    'message' => $error !== '' ? $error : 'Broadcast failed.'
+    'message' => 'Broadcast failed.'
 ));
 ?>
