@@ -1,91 +1,79 @@
 <?php
-// components/navbar.php
+// components/navbar.php - Modern Navigation Component
 $current_role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
+$current_page = basename($_SERVER['PHP_SELF']);
 ?>
-<nav class="navbar navbar-expand-lg navbar-dark bg-glass sticky-top py-3 px-4 border-bottom border-secondary border-opacity-10">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold text-accent d-flex align-items-center" href="<?php echo $current_role ? base_url('dashboard.php') : base_url('index.php'); ?>">
-            <i class="fas fa-university me-2"></i> DFCMS
+<!-- Modern Navigation -->
+<nav class="nav-modern">
+    <div class="nav-container">
+        <a class="nav-brand" href="<?php echo $current_role ? base_url('dashboard.php') : base_url('index.php'); ?>">
+            <div class="nav-brand-icon">
+                <i class="fas fa-university"></i>
+            </div>
+            DFCMS
         </a>
         
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <div class="nav-links">
+            <?php if ($current_role): ?>
+                <a class="nav-link <?php echo $current_page === 'dashboard.php' ? 'active' : ''; ?>" href="<?php echo base_url('dashboard.php'); ?>">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                
+                <?php if ($current_role === 'student'): ?>
+                    <a class="nav-link <?php echo strpos($current_page, 'submit') !== false ? 'active' : ''; ?>" href="<?php echo base_url('student/submit_complaint.php'); ?>">
+                        <i class="fas fa-plus-circle"></i> Submit
+                    </a>
+                <?php endif; ?>
+                
+                <?php if (in_array($current_role, ['cr', 'teacher', 'hod'])): ?>
+                    <a class="nav-link <?php echo strpos($current_page, 'forward') !== false ? 'active' : ''; ?>" href="<?php echo base_url('representative/forward.php'); ?>">
+                        <i class="fas fa-inbox"></i> Inbox
+                    </a>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
         
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <?php
-            // #region agent log
-            if (function_exists('dfcms_debug_log')) {
-                dfcms_debug_log('pre-fix', 'H4', 'components/navbar.php', 'navbar_render_state', array(
-                    'isAuthenticated' => $current_role ? 1 : 0,
-                    'role' => $current_role ? (string) $current_role : 'guest'
-                ));
-            }
-            // #endregion
-            ?>
-            <ul class="navbar-nav me-auto">
-                <?php if ($current_role): ?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo base_url('dashboard.php'); ?>">Dashboard</a>
-                    </li>
-                    <?php if ($current_role === 'student'): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?php echo base_url('student/submit_complaint.php'); ?>">Submit Issue</a>
-                        </li>
-                    <?php endif; ?>
-                    <?php if (in_array($current_role, ['cr', 'teacher', 'hod'])): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?php echo base_url('representative/forward.php'); ?>">Action Hub</a>
-                        </li>
-                    <?php endif; ?>
-                    <?php if ($current_role === 'hod'): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?php echo base_url('admin/audit_monitor.php'); ?>">Audit Monitor</a>
-                        </li>
-                    <?php endif; ?>
-                <?php else: ?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo base_url('index.php'); ?>">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo base_url('index.php#platform'); ?>">Platform</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo base_url('index.php#features'); ?>">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo base_url('index.php#about'); ?>">About</a>
-                    </li>
-                <?php endif; ?>
-            </ul>
-            
-            <div class="ms-auto d-flex align-items-center gap-3">
-                <?php if ($current_role): ?>
-                    <?php 
-                    // Support root and subdirectory includes
-                    $notify_path = file_exists('components/notifications.php') ? 'components/notifications.php' : '../components/notifications.php';
-                    if (file_exists($notify_path)) {
-                        include $notify_path;
-                    }
-                    ?>
-                    <div class="dropdown">
-                        <a class="btn btn-outline-light btn-sm dropdown-toggle rounded-pill px-3" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle me-1"></i> <?php echo htmlspecialchars($_SESSION['full_name']); ?>
+        <div class="flex items-center gap-3">
+            <?php if ($current_role): ?>
+                <?php 
+                $notify_path = file_exists('components/notifications.php') ? 'components/notifications.php' : '../components/notifications.php';
+                if (file_exists($notify_path)) {
+                    include $notify_path;
+                }
+                ?>
+                
+                <div class="dropdown" style="position: relative;">
+                    <button class="btn btn-secondary" type="button" onclick="this.nextElementSibling.classList.toggle('show')" style="display: flex; align-items: center; gap: var(--space-2);">
+                        <i class="fas fa-user-circle"></i>
+                        <span><?php echo htmlspecialchars($_SESSION['full_name']); ?></span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.75rem;"></i>
+                    </button>
+                    <div class="dropdown-menu" style="position: absolute; top: 100%; right: 0; margin-top: var(--space-2); min-width: 200px; display: none;">
+                        <div style="padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--glass-border);">
+                            <p style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary); margin: 0;"><?php echo htmlspecialchars($_SESSION['full_name']); ?></p>
+                            <p style="font-size: 0.75rem; color: var(--text-tertiary); margin: var(--space-1) 0 0;"><?php echo ucfirst($current_role); ?></p>
+                        </div>
+                        <a href="<?php echo base_url('auth/logout.php'); ?>" class="dropdown-item" style="display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); color: var(--danger); font-size: 0.875rem; text-decoration: none;">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg mt-2">
-                            <li><h6 class="dropdown-header text-accent"><?php echo strtoupper($current_role); ?> Account</h6></li>
-                            <li><hr class="dropdown-divider border-secondary"></li>
-                            <li><a class="dropdown-item" href="<?php echo base_url('auth/logout.php'); ?>"><i class="fas fa-sign-out-alt me-2 text-danger"></i> Sign Out</a></li>
-                        </ul>
                     </div>
-                <?php else: ?>
-                    <a href="<?php echo base_url('auth/login.php'); ?>" class="btn btn-outline-accent btn-sm me-2">Login</a>
-                    <a href="<?php echo base_url('auth/register.php'); ?>" class="btn btn-accent btn-sm">Sign Up</a>
-                <?php endif; ?>
-            </div>
+                </div>
+            <?php else: ?>
+                <a href="<?php echo base_url('auth/login.php'); ?>" class="btn btn-ghost">Sign In</a>
+                <a href="<?php echo base_url('auth/register.php'); ?>" class="btn btn-primary">Get Started</a>
+            <?php endif; ?>
         </div>
     </div>
 </nav>
 
-<!-- Bootstrap JS Bundle -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<style>
+    /* Dropdown styles for modern nav */
+    .dropdown-menu.show {
+        display: block !important;
+        animation: fadeInDown 0.2s ease-out;
+    }
+    
+    .dropdown-item:hover {
+        background: var(--glass-highlight);
+    }
+</style>
