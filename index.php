@@ -5,6 +5,11 @@ require_once 'config/config.php';
 $page_title = "Digital Feedback System";
 $extra_css = '<link href="assets/css/landing.css" rel="stylesheet">';
 include 'components/head.php';
+// #region agent log
+if (function_exists('dfcms_debug_log')) {
+    dfcms_debug_log('pre-fix', 'H5', 'index.php', 'landing_render_start', array('hasExtraCss' => isset($extra_css) ? 1 : 0));
+}
+// #endregion
 ?>
 <body>
     <?php include 'components/navbar.php'; ?>
