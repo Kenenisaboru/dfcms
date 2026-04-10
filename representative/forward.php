@@ -65,13 +65,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['forward_action'])) {
 }
 
 // Fetch complaints currently routed to this role
-$stmt = $pdo->prepare("SELECT c.*, u.full_name as student_name 
-                      FROM complaints c 
-                      JOIN users u ON c.student_id = u.id 
-                      WHERE c.current_handler_role = ? AND c.status != 'Resolved'
-                      ORDER BY c.priority DESC, c.created_at ASC");
-$stmt->execute([$role]);
-$inbox = $stmt->fetchAll();
+$inbox = [];
+if ($pdo) {
+    try {
+        $stmt = $pdo->prepare("SELECT c.*, u.full_name as student_name 
+                              FROM complaints c 
+                              JOIN users u ON c.student_id = u.id 
+                              WHERE c.current_handler_role = ? AND c.status != 'Resolved'
+                              ORDER BY c.priority DESC, c.created_at ASC");
+        $stmt->execute([$role]);
+        $inbox = $stmt->fetchAll();
+    } catch (Throwable $e) {
+        $error = "Failed to load inbox data.";
+    }
+} else {
+    $error = "Database connection unavailable.";
+}
 ?>
 <?php
 $page_title = "Action Hub";
