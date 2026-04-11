@@ -761,18 +761,18 @@ h1, h2, h3, h4, h5, h6 {
 .nav-links {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: var(--space-1);
 }
 
 .nav-link {
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-2) var(--space-4);
-    font-size: 0.875rem;
-    font-weight: 500;
+    padding: var(--space-3) var(--space-4);
     color: var(--text-secondary);
     text-decoration: none;
+    font-size: 0.9375rem;
+    font-weight: 500;
     border-radius: var(--radius-lg);
     transition: all var(--transition-fast);
 }
@@ -785,6 +785,12 @@ h1, h2, h3, h4, h5, h6 {
 .nav-link.active {
     color: var(--primary-400);
     background: rgba(16, 185, 129, 0.1);
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
 }
 
 /* Sidebar */
