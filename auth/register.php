@@ -72,6 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             min-height: 100vh;
             display: flex;
             background: var(--bg-primary);
+            align-items: flex-start;
         }
         
         .register-visual {
@@ -81,11 +82,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             justify-content: center;
             padding: var(--space-16);
             background: 
-                linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(0, 0, 0, 0.85) 100%),
-                url('https://images.unsplash.com/photo-1523050853064-96ef21182470?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+                linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, var(--bg-primary) 100%),
+                var(--gradient-mesh);
             background-size: cover;
             background-position: center;
-            position: relative;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow: hidden;
         }
         
         .register-visual::before {
@@ -145,7 +149,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             justify-content: center;
             padding: var(--space-8);
             background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.03) 0%, transparent 70%);
-            overflow-y: auto;
+            min-height: 100vh;
         }
         
         .register-card {
