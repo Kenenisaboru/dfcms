@@ -15,7 +15,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <!-- Modern Design System -->
-    <link href="<?php echo isset($base_path) ? $base_path : ''; ?>assets/css/dfcms-modern.css" rel="stylesheet">
+    <link href="<?php echo function_exists('base_url') ? base_url('assets/css/dfcms-modern.css') : (isset($base_path) ? $base_path : '') . 'assets/css/dfcms-modern.css'; ?>" rel="stylesheet">
     
     <!-- Page-specific CSS -->
     <?php if (isset($extra_css)) echo $extra_css; ?>
