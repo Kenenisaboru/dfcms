@@ -252,3 +252,117 @@ body.light-mode .menu-toggle {
     }
 }
 
+/* --- Navbar Extracted Styles --- */
+.nav-modern {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+    background: rgba(12, 13, 14, 0.85); /* fallback for modern browsers with backdrop-filter */
+    backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.75rem 1.5rem;
+}
+
+.nav-modern.nav-transparent {
+    background: transparent;
+    border-bottom-color: transparent;
+}
+
+.nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #f8fafc;
+    text-decoration: none;
+    letter-spacing: -0.02em;
+}
+
+.nav-brand:hover {
+    color: #f8fafc;
+}
+
+.nav-brand-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 0.75rem;
+    color: white;
+    font-size: 1.125rem;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    border-radius: 0.75rem;
+    transition: all 150ms ease;
+}
+
+.nav-link:hover {
+    color: #f8fafc;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-link.active {
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Fix dropdown styles for navbar when using next-gen-ui */
+.nav-actions .btn-secondary {
+    background: #1f2937;
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    transition: all 150ms ease;
+}
+
+.nav-actions .btn-secondary:hover {
+    background: #334155;
+    border-color: #475569;
+}
+
+.nav-actions .dropdown-menu {
+    background: #1f2937;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+.nav-actions .dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
