@@ -82,11 +82,17 @@ if ($pdo) {
     $error = "Database connection unavailable.";
 }
 ?>
-<?php
-$page_title = "Action Hub";
-include '../components/head.php';
-?>
-<body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Action Hub - DFCMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="../assets/css/next-gen-ui.css" rel="stylesheet">
+</head>
+<body class="dark-mode">
     <?php include '../components/navbar.php'; ?>
 
     <div class="container my-5">
