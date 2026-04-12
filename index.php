@@ -70,6 +70,8 @@ include 'components/head.php';
         </div>
     </section>
 
+    <?php include 'components/footer.php'; ?>
+
     <!-- Platform Features -->
     <section id="features" class="section-platform-features">
         <h2>Platform Features</h2>
@@ -195,6 +197,8 @@ include 'components/head.php';
             </div>
         </div>
     </section>
+
+    <?php include 'components/footer.php'; ?>
 
     <script src="assets/js/dfcms-ui.js"></script>
     <script>

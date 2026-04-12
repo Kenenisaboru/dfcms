@@ -603,6 +603,8 @@ if ($role == 'student') {
         </div>
     </main>
 
+    <?php include 'components/footer.php'; ?>
+
     <!-- Modern UI Framework -->
     <script src="assets/js/dfcms-ui.js"></script>
     

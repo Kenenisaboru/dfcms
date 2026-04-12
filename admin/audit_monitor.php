@@ -104,6 +104,8 @@ include '../components/head.php';
         </div>
     </div>
 
+    <?php include '../components/footer.php'; ?>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const ctx = document.getElementById('categoryChart').getContext('2d');
