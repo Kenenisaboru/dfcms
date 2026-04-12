@@ -9,6 +9,16 @@ if (isset($_SESSION['user_id'])) {
 $error = '';
 $emailValue = '';
 
+// Clear expired IP rate-limit entries on page load (GET) to lift lockouts
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    try {
+        require_once '../config/database.php';
+        $ip_clear = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+        $pdo->prepare("DELETE FROM rate_limits WHERE action = 'login' AND identifier = ?")->execute([$ip_clear]);
+        $pdo->exec("UPDATE users SET login_attempts = 0, locked_until = NULL WHERE locked_until IS NOT NULL AND locked_until < NOW()");
+    } catch (Exception $e) { /* ignore */ }
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     CSRF::validate($_POST['csrf_token']);
     
@@ -48,7 +58,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['full_name'] = $user['full_name'];
                 $_SESSION['role'] = $user['role'];
-                header("Location: ../dashboard.php");
+                $redirect = ($user['role'] === 'admin') ? "../admin/dashboard.php" : "../dashboard.php";
+                header("Location: " . $redirect);
                 exit;
             } else {
                 // PASSWORD FAILURE
@@ -70,6 +81,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // EMAIL NOT FOUND
             $security->logSecurityEvent('login_invalid_email', null, ['email' => $email, 'ip' => $ip]);
             $error = "Invalid email or password.";
+        }
+    }
+
+    if (!empty($error)) {
+        $_SESSION['login_error'] = $error;
+        $_SESSION['login_email'] = $email;
+        if (isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'index.php') !== false) {
+            header("Location: ../index.php");
+            exit;
         }
     }
 }
