@@ -16,27 +16,59 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $emailValue = $email;
     
-    DebugLogger::log('baseline', 'H5', 'auth/login.php:POST', 'login_attempt', array('emailHash' => substr(sha1(strtolower($email)), 0, 12), 'passwordLen' => strlen((string)$password)));
+    $security = new SecurityService();
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
 
-    if (empty($email) || empty($password)) {
+    // 1. IP-Based Rate Limiting
+    if (!$security->checkRateLimit('login', $ip)) {
+        $error = "Too many login attempts from this connection. Please try again in 15 minutes.";
+    } elseif (empty($email) || empty($password)) {
         $error = "Please fill in all fields.";
     } elseif (!$pdo) {
         $error = "Service temporarily unavailable. Please try again later.";
     } else {
-        $stmt = $pdo->prepare("SELECT id, full_name, password, role FROM users WHERE email = ?");
+        // 2. Fetch User & Lock Status
+        $stmt = $pdo->prepare("SELECT id, full_name, password, role, login_attempts, locked_until FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password'])) {
-            DebugLogger::log('baseline', 'H5', 'auth/login.php:POST', 'login_success', array('userId' => (int)$user['id'], 'role' => (string)$user['role']));
-            session_regenerate_id(true);
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['full_name'] = $user['full_name'];
-            $_SESSION['role'] = $user['role'];
-            header("Location: ../dashboard.php");
-            exit;
+        if ($user) {
+            // Check if account is temporarily locked
+            if ($user['locked_until'] && strtotime($user['locked_until']) > time()) {
+                $wait = ceil((strtotime($user['locked_until']) - time()) / 60);
+                $error = "This account is temporarily locked for security. Please wait $wait minutes.";
+            } elseif (password_verify($password, $user['password'])) {
+                // SUCCESS
+                $stmtReset = $pdo->prepare("UPDATE users SET login_attempts = 0, locked_until = NULL WHERE id = ?");
+                $stmtReset->execute([$user['id']]);
+
+                $security->logSecurityEvent('login_success', $user['id'], ['ip' => $ip]);
+                
+                session_regenerate_id(true);
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['full_name'] = $user['full_name'];
+                $_SESSION['role'] = $user['role'];
+                header("Location: ../dashboard.php");
+                exit;
+            } else {
+                // PASSWORD FAILURE
+                $attempts = $user['login_attempts'] + 1;
+                $lockUntil = null;
+                if ($attempts >= 5) {
+                    $lockUntil = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+                    $error = "Account locked for 15 minutes due to too many failed attempts.";
+                } else {
+                    $error = "Invalid email or password. (" . (5 - $attempts) . " attempts remaining)";
+                }
+
+                $stmtFail = $pdo->prepare("UPDATE users SET login_attempts = ?, locked_until = ? WHERE id = ?");
+                $stmtFail->execute([$attempts, $lockUntil, $user['id']]);
+                
+                $security->logSecurityEvent('login_failed', $user['id'], ['ip' => $ip, 'attempts' => $attempts]);
+            }
         } else {
-            DebugLogger::log('baseline', 'H5', 'auth/login.php:POST', 'login_failed', array('emailHash' => substr(sha1(strtolower($email)), 0, 12)));
+            // EMAIL NOT FOUND
+            $security->logSecurityEvent('login_invalid_email', null, ['email' => $email, 'ip' => $ip]);
             $error = "Invalid email or password.";
         }
     }
