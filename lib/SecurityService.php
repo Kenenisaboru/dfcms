@@ -8,6 +8,24 @@ class SecurityService {
     public function __construct() {
         global $pdo;
         $this->pdo = $pdo;
+        $this->ensureUserTableSchema();
+    }
+
+    /**
+     * Ensures the users table has the necessary security columns
+     */
+    private function ensureUserTableSchema() {
+        // Check for login_attempts column
+        $stmt = $this->pdo->query("SHOW COLUMNS FROM `users` LIKE 'login_attempts'");
+        if (!$stmt->fetch()) {
+            $this->pdo->exec("ALTER TABLE `users` ADD COLUMN `login_attempts` int(11) DEFAULT 0");
+        }
+        
+        // Check for locked_until column
+        $stmt = $this->pdo->query("SHOW COLUMNS FROM `users` LIKE 'locked_until'");
+        if (!$stmt->fetch()) {
+            $this->pdo->exec("ALTER TABLE `users` ADD COLUMN `locked_until` timestamp NULL DEFAULT NULL");
+        }
     }
     
     /**
