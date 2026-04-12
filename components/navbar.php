@@ -1,123 +1,84 @@
 <?php
-// components/navbar.php - Premium Navigation Component
+// components/navbar.php - Premium Navigation Component v4.0
 $current_role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
 $current_page = basename($_SERVER['PHP_SELF']);
 $is_landing = isset($nav_transparent) && $nav_transparent === true;
 ?>
-<!-- Premium Navigation -->
-<nav class="nav-modern<?php echo $is_landing ? ' nav-transparent' : ''; ?>">
-    <div class="nav-container">
-        <a class="nav-brand" href="<?php echo $current_role ? base_url('dashboard.php') : base_url('index.php'); ?>">
-            <div class="nav-brand-icon">
-                <i class="fas fa-university"></i>
-            </div>
-            DFCMS
+<!-- Premium Top Navbar -->
+<nav class="navbar navbar-expand-lg top-navbar sticky-top <?php echo $is_landing ? 'navbar-transparent' : ''; ?>">
+    <div class="container-fluid">
+        <!-- Mobile Toggle -->
+        <button class="btn btn-link link-dark d-lg-none p-0 me-3" id="mobile-sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="bi bi-list fs-2"></i>
+        </button>
+
+        <!-- Brand (visible on mobile when sidebar hidden) -->
+        <a class="navbar-brand fw-bold" href="<?php echo base_url('index.php'); ?>">
+            <span style="color: var(--premium-primary);">DF</span>CMS
         </a>
-        
-        <div class="nav-links">
-            <?php if ($is_landing && !$current_role): ?>
-                <a class="nav-link" href="#platform">Platform</a>
-                <a class="nav-link" href="#features">Features</a>
-                <a class="nav-link" href="#about">About</a>
-                <a class="nav-link" href="#contact">Contact</a>
-            <?php elseif ($current_role): ?>
-                <a class="nav-link <?php echo $current_page === 'dashboard.php' ? 'active' : ''; ?>" href="<?php echo base_url('dashboard.php'); ?>">
-                    <i class="fas fa-home"></i> Dashboard
-                </a>
-                
-                <?php if ($current_role === 'student'): ?>
-                    <a class="nav-link <?php echo strpos($current_page, 'submit') !== false ? 'active' : ''; ?>" href="<?php echo base_url('student/submit_complaint.php'); ?>">
-                        <i class="fas fa-plus-circle"></i> Submit
-                    </a>
-                <?php endif; ?>
-                
-                <?php if (in_array($current_role, ['cr', 'teacher', 'hod'])): ?>
-                    <a class="nav-link <?php echo strpos($current_page, 'forward') !== false ? 'active' : ''; ?>" href="<?php echo base_url('representative/forward.php'); ?>">
-                        <i class="fas fa-inbox"></i> Inbox
-                    </a>
-                <?php endif; ?>
-            <?php endif; ?>
+
+        <!-- Search Bar (Desktop) -->
+        <div class="d-none d-md-block flex-grow-1">
+            <div class="navbar-search">
+                <i class="bi bi-search"></i>
+                <input type="text" class="form-control" placeholder="Search complaints, students, or knowledge base..." id="global-search-input">
+            </div>
         </div>
-        
-        <div class="nav-actions">
+
+        <!-- Right Side Actions -->
+        <div class="d-flex align-items-center gap-2 gap-lg-3 ms-auto">
             <?php if ($current_role): ?>
+                <!-- Notifications -->
                 <?php 
                 $notify_path = file_exists('components/notifications.php') ? 'components/notifications.php' : '../components/notifications.php';
                 if (file_exists($notify_path)) {
                     include $notify_path;
                 }
                 ?>
-                
+
+                <!-- User Dropdown (Logged In) -->
                 <div class="dropdown">
-                    <button class="btn btn-secondary" type="button" onclick="this.nextElementSibling.classList.toggle('show')">
-                        <i class="fas fa-user-circle"></i>
-                        <span><?php echo htmlspecialchars($_SESSION['full_name']); ?></span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <div class="dropdown-menu">
-                        <div class="dropdown-header">
-                            <p class="dropdown-name"><?php echo htmlspecialchars($_SESSION['full_name']); ?></p>
-                            <p class="dropdown-role"><?php echo ucfirst($current_role); ?></p>
+                    <a href="#" class="user-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="user-profile-dropdown">
+                        <div class="user-profile-img">
+                            <?php echo strtoupper(substr($_SESSION['full_name'], 0, 1)); ?>
                         </div>
-                        <a href="<?php echo base_url('auth/logout.php'); ?>" class="dropdown-item dropdown-item-danger">
-                            <i class="fas fa-sign-out-alt"></i> Sign Out
-                        </a>
-                    </div>
+                        <div class="d-none d-lg-block">
+                            <div class="user-name"><?php echo htmlspecialchars($_SESSION['full_name']); ?></div>
+                            <div class="user-role"><?php echo ucfirst($current_role); ?></div>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" id="user-dropdown-menu">
+                        <li><h6 class="dropdown-header">Account</h6></li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="bi bi-person"></i> My Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="bi bi-gear"></i> Settings
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <i class="bi bi-shield-check"></i> Privacy
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="<?php echo base_url('auth/logout.php'); ?>">
+                                <i class="bi bi-box-arrow-right"></i> Sign Out
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             <?php else: ?>
-                <a href="<?php echo base_url('auth/login.php'); ?>" class="btn btn-ghost">Sign In</a>
-                <a href="<?php echo base_url('auth/register.php'); ?>" class="btn btn-primary">Get Started</a>
+                <!-- Guest Actions -->
+                <div class="d-flex gap-2 align-items-center">
+                    <a href="<?php echo base_url('auth/login.php'); ?>" class="btn btn-light rounded-pill px-4 py-2 fw-600 small">Sign In</a>
+                    <a href="<?php echo base_url('auth/register.php'); ?>" class="btn btn-primary rounded-pill px-4 py-2 fw-600 small">Get Started</a>
+                </div>
             <?php endif; ?>
         </div>
     </div>
 </nav>
-
-<style>
-    .dropdown-menu.show {
-        display: block !important;
-        animation: fadeInDown 0.2s ease-out;
-    }
-    
-    .dropdown-header {
-        padding: var(--space-3) var(--space-4);
-        border-bottom: 1px solid var(--glass-border);
-    }
-    
-    .dropdown-name {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin: 0;
-    }
-    
-    .dropdown-role {
-        font-size: 0.75rem;
-        color: var(--text-tertiary);
-        margin: var(--space-1) 0 0;
-    }
-    
-    .dropdown-item {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-        padding: var(--space-3) var(--space-4);
-        color: var(--text-secondary);
-        font-size: 0.875rem;
-        text-decoration: none;
-        transition: all var(--transition-fast);
-    }
-    
-    .dropdown-item:hover {
-        background: var(--glass-highlight);
-        color: var(--text-primary);
-    }
-    
-    .dropdown-item-danger {
-        color: var(--danger);
-    }
-    
-    .dropdown-item-danger:hover {
-        background: rgba(239, 68, 68, 0.1);
-        color: var(--danger);
-    }
-</style>
