@@ -45,66 +45,66 @@ include 'components/head.php';
                 </p>
             </div>
 
-            <div class="hero-features">
-                <div class="feature-bullet">
-                    <i class="fas fa-check-circle"></i>
+            <div class="hero-features" style="display: flex; justify-content: center; gap: 2rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                <div class="feature-bullet" style="display: flex; align-items: center; gap: 0.75rem; color: #cbd5e1; font-size: 0.95rem; font-weight: 500;">
+                    <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.125rem;"></i>
                     <span>Enterprise-grade security & compliance</span>
                 </div>
-                <div class="feature-bullet">
-                    <i class="fas fa-check-circle"></i>
+                <div class="feature-bullet" style="display: flex; align-items: center; gap: 0.75rem; color: #cbd5e1; font-size: 0.95rem; font-weight: 500;">
+                    <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.125rem;"></i>
                     <span>AI-powered insights & analytics</span>
                 </div>
-                <div class="feature-bullet">
-                    <i class="fas fa-check-circle"></i>
+                <div class="feature-bullet" style="display: flex; align-items: center; gap: 0.75rem; color: #cbd5e1; font-size: 0.95rem; font-weight: 500;">
+                    <i class="fas fa-check-circle" style="color: #10b981; font-size: 1.125rem;"></i>
                     <span>Seamless integration & automation</span>
                 </div>
             </div>
 
-            <div class="hero-stats">
-                <div class="stat-item">
-                    <div class="stat-number">10K+</div>
-                    <div class="stat-label">Active Users</div>
+            <div class="hero-stats" style="display: flex; justify-content: center; gap: 3rem; margin-bottom: 3rem;">
+                <div class="stat-item" style="text-align: center;">
+                    <div class="stat-number" style="font-size: 2.5rem; font-weight: 700; color: #10b981; margin-bottom: 0.5rem;">10K+</div>
+                    <div class="stat-label" style="font-size: 0.875rem; color: #cbd5e1; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Active Users</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number">95%</div>
-                    <div class="stat-label">Satisfaction</div>
+                <div class="stat-item" style="text-align: center;">
+                    <div class="stat-number" style="font-size: 2.5rem; font-weight: 700; color: #10b981; margin-bottom: 0.5rem;">95%</div>
+                    <div class="stat-label" style="font-size: 0.875rem; color: #cbd5e1; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Satisfaction</div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number">24/7</div>
-                    <div class="stat-label">Support</div>
+                <div class="stat-item" style="text-align: center;">
+                    <div class="stat-number" style="font-size: 2.5rem; font-weight: 700; color: #10b981; margin-bottom: 0.5rem;">24/7</div>
+                    <div class="stat-label" style="font-size: 0.875rem; color: #cbd5e1; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em;">Support</div>
                 </div>
             </div>
 
-            <div class="hero-actions">
-                <a href="auth/register.php" class="btn-premium-primary">
+            <div class="hero-actions" style="display: flex; justify-content: center; gap: 1.5rem; margin-bottom: 4rem; flex-wrap: wrap;">
+                <a href="auth/register.php" class="btn-premium-primary" style="display: inline-flex; align-items: center; gap: 0.75rem; padding: 1rem 2rem; border-radius: 12px; font-weight: 600; font-size: 1.125rem; text-decoration: none; transition: all 0.3s ease; background: linear-gradient(135deg, #10b981 0%, #34d399 100%); color: white; box-shadow: 0 20px 60px rgba(16, 185, 129, 0.4);">
                     <span>Get Started Free</span>
                     <i class="fas fa-arrow-right"></i>
                 </a>
-                <a href="auth/login.php" class="btn-premium-secondary">
+                <a href="auth/login.php" class="btn-premium-secondary" style="display: inline-flex; align-items: center; gap: 0.75rem; padding: 1rem 2rem; border-radius: 12px; font-weight: 600; font-size: 1.125rem; text-decoration: none; transition: all 0.3s ease; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(16, 185, 129, 0.2); color: white;">
                     <i class="fas fa-sign-in-alt"></i>
                     <span>Sign In</span>
                 </a>
-                <a href="#features" class="btn-premium-ghost">
+                <a href="#features" class="btn-premium-ghost" style="display: inline-flex; align-items: center; gap: 0.75rem; padding: 1rem 2rem; border-radius: 12px; font-weight: 600; font-size: 1.125rem; text-decoration: none; transition: all 0.3s ease; background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(16, 185, 129, 0.3); color: white;">
                     <i class="fas fa-play-circle"></i>
                     <span>Watch Demo</span>
                 </a>
             </div>
 
-            <div class="hero-testimonial">
-                <div class="testimonial-content">
-                    <div class="testimonial-stars">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
+            <div class="hero-testimonial" style="max-width: 600px; margin: 3rem auto 2rem;">
+                <div class="testimonial-content" style="background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(16, 185, 129, 0.1); border-radius: 16px; padding: 2rem; text-align: left;">
+                    <div class="testimonial-stars" style="display: flex; gap: 0.25rem; margin-bottom: 1rem;">
+                        <i class="fas fa-star" style="color: #fbbf24; font-size: 1rem;"></i>
+                        <i class="fas fa-star" style="color: #fbbf24; font-size: 1rem;"></i>
+                        <i class="fas fa-star" style="color: #fbbf24; font-size: 1rem;"></i>
+                        <i class="fas fa-star" style="color: #fbbf24; font-size: 1rem;"></i>
+                        <i class="fas fa-star" style="color: #fbbf24; font-size: 1rem;"></i>
                     </div>
-                    <p class="testimonial-text">"DFCMS revolutionized how we handle student feedback. The platform is intuitive, powerful, and has significantly improved our response times."</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar"></div>
-                        <div class="author-info">
-                            <div class="author-name">Dr. Sarah Johnson</div>
-                            <div class="author-title">Dean of Student Affairs</div>
+                    <p class="testimonial-text" style="color: #cbd5e1; line-height: 1.6; font-size: 0.95rem; font-style: italic; margin-bottom: 1.5rem;">"DFCMS revolutionized how we handle student feedback. The platform is intuitive, powerful, and has significantly improved our response times."</p>
+                    <div class="testimonial-author" style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="author-avatar" style="width: 48px; height: 48px; background: linear-gradient(135deg, #10b981 0%, #34d399 100%); border-radius: 50%; flex-shrink: 0;"></div>
+                        <div class="author-info" style="flex: 1;">
+                            <div class="author-name" style="color: white; font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem;">Dr. Sarah Johnson</div>
+                            <div class="author-title" style="color: #cbd5e1; font-size: 0.875rem;">Dean of Student Affairs</div>
                         </div>
                     </div>
                 </div>
