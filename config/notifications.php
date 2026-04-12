@@ -17,6 +17,20 @@ class NotificationManager {
     }
 
     /**
+     * Sends a notification to all users with a specific role
+     */
+    public static function sendToRole($pdo, $role, $message, $link = null, $type = 'general', $title = 'System Update') {
+        try {
+            require_once __DIR__ . '/../lib/NotificationService.php';
+            $service = new NotificationService();
+            return $service->notifyRole($role, $type, $title, $message, ['link' => $link]);
+        } catch (Exception $e) {
+            error_log("Notification Role Error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Fetches unread notifications for a specific user
      */
     public static function getUnread($pdo, $userId) {
