@@ -23,7 +23,7 @@ $complaints = $stmt->fetchAll();
 $stmtHist = $pdo->query("SELECT h.*, u.full_name as actor_name, u.role as actor_role 
                         FROM complaint_history h 
                         JOIN users u ON h.action_by = u.id 
-                        ORDER BY h.action_date DESC LIMIT 30");
+                        ORDER BY h.created_at DESC LIMIT 30");
 $auditLogs = $stmtHist->fetchAll();
 
 // Category Breakdown for Analytics
@@ -95,7 +95,7 @@ include '../components/head.php';
                     <h5 class="fw-bold text-white mb-3">Activity Log</h5>
                     <?php foreach($auditLogs as $log): ?>
                         <div class="audit-log-item mb-3 pb-2 border-bottom border-secondary border-opacity-10">
-                            <div class="d-flex justify-content-between"><span class="text-accent fw-bold small"><?php echo $log['actor_name']; ?></span><span class="text-muted" style="font-size: 10px;"><?php echo date('H:i', strtotime($log['action_date'])); ?></span></div>
+                            <div class="d-flex justify-content-between"><span class="text-accent fw-bold small"><?php echo $log['actor_name']; ?></span><span class="text-muted" style="font-size: 10px;"><?php echo date('H:i', strtotime($log['created_at'])); ?></span></div>
                             <div class="small text-light mt-1"><?php echo htmlspecialchars($log['comments']); ?></div>
                         </div>
                     <?php endforeach; ?>

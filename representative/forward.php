@@ -1,5 +1,4 @@
 <?php
-$page_title = "Action Hub";
 require_once '../config/config.php';
 
 // Check if user is logged in
@@ -97,104 +96,158 @@ if ($pdo) {
     $stmt->execute([$role, $userId]);
     $inbox = $stmt->fetchAll();
 }
+
+$page_title = "Action Hub";
+$base_path = "../";
+include '../components/head.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Action Hub - DFCMS</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="../assets/css/next-gen-ui.css" rel="stylesheet">
-    <style>
-        .btn-action-group { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-resolve { background: #10b981; color: #000; font-weight: bold; border: none; }
-        .btn-reject { background: #ef4444; color: #fff; font-weight: bold; border: none; }
-        .btn-route { background: #3b82f6; color: #fff; font-weight: bold; border: none; }
-        .action-card { transition: 0.3s; }
-        .action-card:hover { transform: scale(1.01); }
-    </style>
-</head>
-<body class="dark-mode">
-    <?php include '../components/navbar.php'; ?>
 
-    <div class="container my-5">
-        <h2 class="mb-4 text-white fw-bold"><i class="fas fa-inbox me-2 text-accent"></i> <?php echo strtoupper($role); ?> Action Hub</h2>
-        
-        <?php if ($error): ?><div class="alert alert-danger py-2 border-0 bg-danger bg-opacity-25 text-danger"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
-        <?php if ($success): ?><div class="alert alert-success py-2 border-0 bg-success bg-opacity-25 text-success"><?php echo htmlspecialchars($success); ?></div><?php endif; ?>
+<div class="admin-layout">
+    <?php include '../components/sidebar.php'; ?>
 
-        <div class="row mt-4">
-            <?php if (count($inbox) > 0): ?>
-                <?php foreach ($inbox as $item): ?>
-                    <div class="col-md-12 mb-4">
-                        <div class="card card-custom action-card bg-glass border-0 shadow rounded-4 p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h4 class="mb-0 text-white fw-bold">Issue #<?php echo $item['id']; ?>: <?php echo htmlspecialchars($item['category']); ?></h4>
-                                <span class="badge rounded-pill bg-<?php echo strtolower($item['priority']) === 'high' ? 'danger' : (strtolower($item['priority']) === 'medium' ? 'warning text-dark' : 'info'); ?> px-3 py-2 small fw-bold"><?php echo $item['priority']; ?> Priority</span>
-                            </div>
-                            
-                            <div class="d-flex align-items-center mb-4 text-dim small">
-                                <div class="me-4"><i class="fas fa-user-graduate me-1"></i> <strong>Source:</strong> <span class="text-light"><?php echo htmlspecialchars($item['student_name']); ?></span></div>
-                                <div><i class="fas fa-folder me-1"></i> <strong>Category:</strong> <span class="text-light"><?php echo htmlspecialchars($item['category']); ?></span></div>
-                            </div>
-                            
-                            <div class="message-box bg-dark bg-opacity-25 border border-secondary border-opacity-10 p-3 rounded-3 mb-4">
-                                <?php echo nl2br(htmlspecialchars($item['message'])); ?>
-                            </div>
-                            
-                            <form method="POST" class="pt-3 border-top border-secondary border-opacity-10">
-                                <?php echo CSRF::input(); ?>
-                                <input type="hidden" name="complaint_id" value="<?php echo $item['id']; ?>">
-                                
-                                <div class="row g-3">
-                                    <div class="col-md-12">
-                                        <label class="form-label">Action Log / Comments:</label>
-                                        <textarea name="action_comment" class="form-control" rows="2" placeholder="Describe your action or reason for routing/closing..." required></textarea>
-                                    </div>
-                                    
-                                    <div class="col-md-4">
-                                        <label class="form-label">Forward To (Optional):</label>
-                                        <select name="target_role" class="form-select">
-                                            <option value="">Select Target...</option>
-                                            <?php if($role == 'cr'): ?>
-                                                <option value="teacher">Teacher</option>
-                                                <option value="lab_assistant">Lab Assistant</option>
-                                                <option value="hod">HOD</option>
-                                            <?php elseif($role == 'teacher'): ?>
-                                                <option value="cr">Forward to CR</option>
-                                                <option value="hod">Forward to HOD</option>
-                                                <option value="lab_assistant">Lab Assistant</option>
-                                            <?php elseif($role == 'hod'): ?>
-                                                <option value="teacher">Forward to Teacher</option>
-                                            <?php elseif($role == 'lab_assistant'): ?>
-                                                <option value="teacher">Report back to Teacher</option>
-                                                <option value="cr">Update CR</option>
-                                            <?php endif; ?>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="col-md-8 d-flex align-items-end gap-2">
-                                        <button type="submit" name="forward_action" class="btn btn-route flex-grow-1 py-2"><i class="fas fa-route me-1"></i> ROUTE</button>
-                                        <button type="submit" name="resolve_action" class="btn btn-resolve flex-grow-1 py-2"><i class="fas fa-check-circle me-1"></i> RESOLVE</button>
-                                        <button type="submit" name="reject_action" class="btn btn-reject flex-grow-1 py-2"><i class="fas fa-times-circle me-1"></i> REJECT</button>
-                                        <a href="../student/messages.php?receiver_id=<?php echo $item['student_id']; ?>" class="btn btn-outline-light border-2 rounded-3 px-3">
-                                            <i class="fas fa-comment-dots"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <div class="col-12 text-center py-5">
-                    <i class="fas fa-check-circle fa-4x text-dim mb-3 opacity-25"></i>
-                    <p class="text-dim">Queue is empty. Excellent work!</p>
+    <div class="main-container">
+        <?php 
+        $current_role = $role;
+        include '../components/navbar.php'; 
+        ?>
+
+        <main class="p-4 p-lg-5">
+            <!-- Header -->
+            <div class="d-md-flex align-items-center justify-content-between mb-5">
+                <div>
+                    <h1 class="display-6 fw-bold mb-1">Action Hub</h1>
+                    <p class="text-muted mb-0">Manage and route incoming complaints for the <?php echo strtoupper($role); ?> role.</p>
+                </div>
+                <div class="mt-3 mt-md-0">
+                    <span class="badge bg-primary-soft text-primary px-3 py-2 rounded-pill fw-bold">
+                        <i class="bi bi-inbox-fill me-1"></i> <?php echo count($inbox); ?> Pending Actions
+                    </span>
+                </div>
+            </div>
+
+            <?php if ($error): ?>
+                <div class="alert alert-danger border-0 shadow-sm rounded-4 p-3 mb-4 small" role="alert">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i> <?php echo htmlspecialchars($error); ?>
                 </div>
             <?php endif; ?>
-        </div>
+            
+            <?php if ($success): ?>
+                <div class="alert alert-success border-0 shadow-sm rounded-4 p-3 mb-4 small" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i> <?php echo htmlspecialchars($success); ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="row g-4">
+                <?php if (count($inbox) > 0): ?>
+                    <?php foreach ($inbox as $item): ?>
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                                <div class="card-body p-4 p-md-5">
+                                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+                                        <div>
+                                            <span class="badge-soft badge-soft-primary mb-2 d-inline-block">Issue #<?php echo $item['id']; ?></span>
+                                            <h3 class="fw-bold mb-0"><?php echo htmlspecialchars($item['category']); ?></h3>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <?php 
+                                            $pClass = 'badge-soft-info';
+                                            if (strtolower($item['priority']) == 'high') $pClass = 'badge-soft-danger';
+                                            if (strtolower($item['priority']) == 'medium') $pClass = 'badge-soft-warning';
+                                            ?>
+                                            <span class="badge-soft <?php echo $pClass; ?> px-3 py-2 fw-bold"><?php echo $item['priority']; ?> Priority</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-4 mb-4">
+                                        <div class="col-md-6 col-lg-3">
+                                            <div class="small text-muted mb-1 text-uppercase fw-bold tracking-wider" style="font-size: 0.65rem;">From Student</div>
+                                            <div class="fw-bold d-flex align-items-center">
+                                                <div class="bg-light rounded-circle p-2 me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                    <i class="bi bi-person text-primary"></i>
+                                                </div>
+                                                <?php echo htmlspecialchars($item['student_name']); ?>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-lg-3">
+                                            <div class="small text-muted mb-1 text-uppercase fw-bold tracking-wider" style="font-size: 0.65rem;">Date Submitted</div>
+                                            <div class="fw-bold"><i class="bi bi-calendar-event me-2 text-muted"></i><?php echo date('M j, Y', strtotime($item['created_at'])); ?></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-light p-4 rounded-4 mb-5 border-start border-primary border-4">
+                                        <div class="small text-muted mb-2 fw-bold text-uppercase" style="font-size: 0.65rem;">Description</div>
+                                        <p class="mb-0 text-dark lh-base"><?php echo nl2br(htmlspecialchars($item['message'])); ?></p>
+                                    </div>
+
+                                    <form method="POST" action="">
+                                        <?php echo CSRF::input(); ?>
+                                        <input type="hidden" name="complaint_id" value="<?php echo $item['id']; ?>">
+                                        
+                                        <div class="row g-4">
+                                            <div class="col-12">
+                                                <label class="form-label fw-bold small text-uppercase tracking-wider">Internal Action Note</label>
+                                                <textarea name="action_comment" class="form-control border-light bg-light" rows="3" placeholder="Describe your action or reason for routing/closing..." required></textarea>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <label class="form-label fw-bold small text-uppercase tracking-wider">Route to Role</label>
+                                                <select name="target_role" class="form-select border-light bg-light">
+                                                    <option value="">Choose target...</option>
+                                                    <?php if($role == 'cr'): ?>
+                                                        <option value="teacher">Teacher</option>
+                                                        <option value="lab_assistant">Lab Assistant</option>
+                                                        <option value="hod">HOD</option>
+                                                    <?php elseif($role == 'teacher'): ?>
+                                                        <option value="cr">Forward to CR</option>
+                                                        <option value="hod">Forward to HOD</option>
+                                                        <option value="lab_assistant">Lab Assistant</option>
+                                                    <?php elseif($role == 'hod'): ?>
+                                                        <option value="teacher">Forward to Teacher</option>
+                                                    <?php elseif($role == 'lab_assistant'): ?>
+                                                        <option value="teacher">Report back to Teacher</option>
+                                                        <option value="cr">Update CR</option>
+                                                    <?php endif; ?>
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="col-md-8 d-flex align-items-end gap-2 flex-wrap flex-md-nowrap">
+                                                <button type="submit" name="forward_action" class="btn btn-primary shadow-sm rounded-pill flex-grow-1 py-2 fw-bold px-4 mt-2 mt-md-0"><i class="bi bi-send-check me-2"></i> Route</button>
+                                                <button type="submit" name="resolve_action" class="btn btn-success shadow-sm rounded-pill flex-grow-1 py-2 fw-bold px-4 mt-2 mt-md-0 text-white"><i class="bi bi-check-circle me-2"></i> Resolve</button>
+                                                <button type="submit" name="reject_action" class="btn btn-danger shadow-sm rounded-pill flex-grow-1 py-2 fw-bold px-4 mt-2 mt-md-0"><i class="bi bi-x-circle me-2"></i> Reject</button>
+                                                <a href="../student/messages.php?receiver_id=<?php echo $item['student_id']; ?>" class="btn btn-white shadow-sm rounded-circle p-2 mt-2 mt-md-0 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                                                    <i class="bi bi-chat-text fs-5"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="col-12 text-center py-5">
+                        <div class="bg-primary-soft text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4 shadow-sm" style="width: 100px; height: 100px;">
+                            <i class="bi bi-check2-all fs-1"></i>
+                        </div>
+                        <h3 class="fw-bold">All caught up!</h3>
+                        <p class="text-muted">Your inbox is clear. All complaints have been routed or resolved.</p>
+                        <a href="../dashboard.php" class="btn btn-primary rounded-pill px-4 mt-3">Return to Dashboard</a>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </main>
     </div>
+</div>
+
+<style>
+    .bg-primary-soft { background-color: var(--brand-primary-soft); }
+    .btn-white { background-color: #fff; color: #0f172a; border: 1px solid #e2e8f0; transition: all 0.2s; }
+    .btn-white:hover { background-color: #f1f5f9; transform: translateY(-1px); }
+    .tracking-wider { letter-spacing: 0.05em; }
+</style>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<?php include '../components/footer.php'; ?>
 </body>
 </html>

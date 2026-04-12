@@ -34,7 +34,7 @@ try {
                           FROM complaint_history h 
                           JOIN users u ON h.action_by = u.id 
                           WHERE h.complaint_id = ? 
-                          ORDER BY h.action_date DESC");
+                          ORDER BY h.created_at DESC");
     $stmt->execute([$complaintId]);
     $history = $stmt->fetchAll();
 

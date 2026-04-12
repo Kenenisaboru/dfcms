@@ -1,12 +1,8 @@
 <?php
-// student/tracker.php
-session_start();
-require_once '../config/database.php';
+// student/tracker.php - Premium Complaint Tracker v4.0
+require_once '../config/config.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
-    header("Location: ../auth/login.php");
-    exit;
-}
+check_login('student');
 
 $userId = $_SESSION['user_id'];
 
@@ -18,262 +14,349 @@ $stmt = $pdo->prepare("SELECT c.*, u.full_name as handler_name
                       ORDER BY c.created_at DESC");
 $stmt->execute([$userId]);
 $complaints = $stmt->fetchAll();
+
+// Stats
+$totalCount = count($complaints);
+$pendingCount = count(array_filter($complaints, fn($c) => $c['status'] === 'Pending'));
+$progressCount = count(array_filter($complaints, fn($c) => $c['status'] === 'In-Progress'));
+$resolvedCount = count(array_filter($complaints, fn($c) => $c['status'] === 'Resolved'));
+
+$page_title = "My Complaints";
+$base_path = '../';
+include '../components/head.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Track Complaints - DFCMS</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #10b981;
-            --primary-glow: rgba(16, 185, 129, 0.4);
-            --bg-dark: #0c0d0e;
-            --card-bg: rgba(18, 18, 18, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-light: #f8fafc;
-            --text-dim: #94a3b8;
-        }
 
-        body { 
-            background-color: var(--bg-dark); 
-            background-image: 
-                radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
-            color: var(--text-light); 
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-        }
-
-        .navbar-custom { 
-            background: rgba(18, 18, 18, 0.8);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--glass-border); 
-            padding: 1rem 2rem;
-        }
-
-        .card-custom { 
-            background: var(--card-bg); 
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border); 
-            border-radius: 20px; 
-            padding: 40px; 
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .table-custom {
-            --bs-table-bg: transparent;
-            --bs-table-color: var(--text-light);
-            --bs-table-border-color: var(--glass-border);
-            margin-bottom: 0;
-        }
-
-        .table-custom thead th {
-            border-top: none;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            letter-spacing: 1px;
-            color: var(--text-dim);
-            padding: 1.5rem 1rem;
-        }
-
-        .table-custom tbody td {
-            vertical-align: middle;
-            padding: 1.25rem 1rem;
-            border-bottom-color: var(--glass-border);
-        }
-
-        .badge-status {
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-pending { background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
-        .badge-resolved { background-color: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
-        .badge-rejected { background-color: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
-        .badge-progress { background-color: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
-
-        .btn-view {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--primary);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            transition: all 0.2s ease;
-        }
-        .btn-view:hover {
-            background: var(--primary);
-            color: #000;
-        }
-    </style>
-</head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom px-4">
-        <a class="navbar-brand text-success fw-bold" href="../dashboard.php">DFCMS</a>
-        <div class="ms-auto">
-            <a href="../dashboard.php" class="btn btn-outline-light btn-sm me-3"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
-        </div>
-    </nav>
+<div class="admin-layout">
+    <?php include '../components/sidebar.php'; ?>
 
-    <div class="container my-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="fw-bold"><i class="fas fa-search me-2 text-success"></i> Track Your Status</h3>
-            <span class="text-dim small">Total Complaints: <?php echo count($complaints); ?></span>
-        </div>
-        
-        <div class="card card-custom">
-            <div class="table-responsive">
-                <table class="table table-custom table-hover">
-                    <thead>
-                        <tr>
-                            <th>Complaint ID</th>
-                            <th>Category</th>
-                            <th>Current Handler</th>
-                            <th>Status</th>
-                            <th>Last Update</th>
-                            <th class="text-end">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (count($complaints) > 0): ?>
-                            <?php foreach ($complaints as $c): ?>
-                                <tr>
-                                    <td class="fw-bold text-accent">#<?php echo $c['id']; ?></td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-folder-open me-2 text-dim"></i>
-                                            <?php echo htmlspecialchars($c['category']); ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <i class="fas fa-user-circle me-2 text-dim"></i>
-                                            <?php echo $c['handler_name'] ? htmlspecialchars($c['handler_name']) : '<span class="text-dim small italic">Unassigned</span>'; ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge-status <?php 
-                                            echo match($c['status']) {
-                                                'Pending' => 'badge-pending',
-                                                'In-Progress' => 'badge-progress',
-                                                'Resolved' => 'badge-resolved',
-                                                'Rejected' => 'badge-rejected',
-                                                default => 'bg-secondary'
-                                            };
-                                        ?>"><?php echo $c['status']; ?></span>
-                                    </td>
-                                    <td>
-                                        <div class="text-dim small">
-                                            <i class="far fa-calendar-alt me-1"></i>
-                                            <?php echo date('M d, Y', strtotime($c['updated_at'])); ?>
-                                        </div>
-                                    </td>
-                                    <td class="text-end">
-                                        <div class="d-flex justify-content-end gap-2">
-                                            <?php if ($c['assigned_to']): ?>
-                                                <a href="messages.php?receiver_id=<?php echo $c['assigned_to']; ?>" class="btn btn-sm btn-view rounded-pill px-3">
-                                                    <i class="fas fa-comment-dots me-1"></i> Message
-                                                </a>
-                                            <?php endif; ?>
-                                            <button class="btn btn-sm btn-view rounded-pill px-3" onclick="viewHistory(<?php echo $c['id']; ?>)">
-                                                <i class="fas fa-history me-1"></i> View Log
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="6" class="text-center text-dim py-5">
-                                    <i class="fas fa-clipboard-list fa-3x mb-3 opacity-25"></i>
-                                    <p>You haven't submitted any complaints yet.</p>
-                                    <a href="submit_complaint.php" class="btn btn-success btn-sm mt-2 rounded-pill px-4">Submit First Complaint</a>
-                                </td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    <div class="main-container">
+        <?php include '../components/navbar.php'; ?>
 
-    <!-- History Modal -->
-    <div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content bg-glass border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="modal-header border-bottom border-secondary border-opacity-10 py-3 px-4">
-                    <h5 class="modal-title fw-bold text-white">Complaint #<span id="modalCompId"></span> History</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        <main class="p-4 p-lg-5" style="max-width: 1600px;">
+            <!-- Page Header -->
+            <div class="d-md-flex align-items-center justify-content-between mb-5 page-header">
+                <div>
+                    <h1 class="fw-800 mb-1" style="color: var(--premium-text-heading); font-size: 1.75rem;">
+                        <i class="bi bi-list-task me-2" style="color: var(--premium-primary);"></i>My Complaints
+                    </h1>
+                    <p class="text-muted-color mb-0" style="font-size: 0.9375rem;">Track and manage all your submitted complaints</p>
                 </div>
-                <div class="modal-body p-4">
-                    <div id="historyTimeline" class="history-timeline">
-                        <!-- History items injected here -->
+                <div class="mt-3 mt-md-0 d-flex gap-3">
+                    <a href="submit_complaint.php" class="btn btn-primary rounded-pill px-4 py-2 fw-600" id="btn-new-complaint">
+                        <i class="bi bi-plus-circle-fill me-2"></i> New Complaint
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="row g-4 mb-5">
+                <div class="col-6 col-lg-3">
+                    <div class="card border-0 stat-card h-100">
+                        <div class="card-body p-4 text-center">
+                            <div class="stat-icon-badge bg-primary-soft mx-auto" style="width: 48px; height: 48px;">
+                                <i class="bi bi-journal-text" style="font-size: 1.1rem;"></i>
+                            </div>
+                            <div class="stat-value mt-2" style="font-size: 1.5rem;"><?php echo $totalCount; ?></div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="card border-0 stat-card h-100">
+                        <div class="card-body p-4 text-center">
+                            <div class="stat-icon-badge bg-amber-soft mx-auto" style="width: 48px; height: 48px;">
+                                <i class="bi bi-clock" style="font-size: 1.1rem;"></i>
+                            </div>
+                            <div class="stat-value mt-2" style="font-size: 1.5rem;"><?php echo $pendingCount; ?></div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="card border-0 stat-card h-100">
+                        <div class="card-body p-4 text-center">
+                            <div class="stat-icon-badge mx-auto" style="width: 48px; height: 48px; background: var(--premium-info-soft); color: var(--premium-info);">
+                                <i class="bi bi-arrow-repeat" style="font-size: 1.1rem;"></i>
+                            </div>
+                            <div class="stat-value mt-2" style="font-size: 1.5rem;"><?php echo $progressCount; ?></div>
+                            <div class="stat-label">In Progress</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-lg-3">
+                    <div class="card border-0 stat-card h-100">
+                        <div class="card-body p-4 text-center">
+                            <div class="stat-icon-badge bg-teal-soft mx-auto" style="width: 48px; height: 48px;">
+                                <i class="bi bi-check-circle" style="font-size: 1.1rem;"></i>
+                            </div>
+                            <div class="stat-value mt-2" style="font-size: 1.5rem;"><?php echo $resolvedCount; ?></div>
+                            <div class="stat-label">Resolved</div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Filter Bar -->
+            <div class="card border-0 mb-4" id="card-filter">
+                <div class="card-body py-3 px-4">
+                    <div class="d-flex flex-wrap align-items-center gap-3">
+                        <span class="fw-700 small" style="color: var(--premium-text-heading);">
+                            <i class="bi bi-funnel me-1"></i>Filter:
+                        </span>
+                        <button class="btn btn-sm rounded-pill px-3 fw-600 filter-btn active" data-filter="all"
+                                style="font-size: 0.75rem;">
+                            All <span class="ms-1 badge rounded-pill" style="background: var(--premium-primary); font-size: 0.6rem;"><?php echo $totalCount; ?></span>
+                        </button>
+                        <button class="btn btn-sm btn-light rounded-pill px-3 fw-600 filter-btn" data-filter="Pending"
+                                style="font-size: 0.75rem;">
+                            Pending <span class="ms-1 badge rounded-pill bg-warning" style="font-size: 0.6rem;"><?php echo $pendingCount; ?></span>
+                        </button>
+                        <button class="btn btn-sm btn-light rounded-pill px-3 fw-600 filter-btn" data-filter="In-Progress"
+                                style="font-size: 0.75rem;">
+                            In Progress <span class="ms-1 badge rounded-pill bg-info" style="font-size: 0.6rem;"><?php echo $progressCount; ?></span>
+                        </button>
+                        <button class="btn btn-sm btn-light rounded-pill px-3 fw-600 filter-btn" data-filter="Resolved"
+                                style="font-size: 0.75rem;">
+                            Resolved <span class="ms-1 badge rounded-pill bg-success" style="font-size: 0.6rem;"><?php echo $resolvedCount; ?></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complaints Table -->
+            <div class="card border-0" id="card-complaints-table">
+                <div class="card-body p-0">
+                    <?php if (empty($complaints)): ?>
+                        <div class="text-center py-5 px-4">
+                            <div class="d-inline-flex align-items-center justify-content-center mb-3 rounded-xl" 
+                                 style="width: 80px; height: 80px; background: var(--premium-bg);">
+                                <i class="bi bi-clipboard-x fs-1" style="color: var(--premium-text-muted);"></i>
+                            </div>
+                            <p class="fw-600 mb-1" style="color: var(--premium-text-heading);">No complaints yet</p>
+                            <p class="text-muted-color small mb-3">Submit your first complaint to get started.</p>
+                            <a href="submit_complaint.php" class="btn btn-primary rounded-pill px-4 py-2 fw-600 btn-sm">
+                                <i class="bi bi-plus-circle me-1"></i> Submit Complaint
+                            </a>
+                        </div>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" id="complaints-table">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">ID</th>
+                                        <th>Category</th>
+                                        <th>Handler</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th>Last Updated</th>
+                                        <th class="text-end pe-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($complaints as $c): ?>
+                                        <tr data-status="<?php echo $c['status']; ?>">
+                                            <td class="ps-4">
+                                                <span class="fw-700" style="color: var(--premium-primary);">#<?php echo $c['id']; ?></span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <i class="bi bi-folder2-open" style="color: var(--premium-text-muted);"></i>
+                                                    <span class="fw-500"><?php echo htmlspecialchars($c['category']); ?></span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="d-flex align-items-center justify-content-center rounded-circle" 
+                                                         style="width: 28px; height: 28px; background: var(--premium-bg); font-size: 0.6875rem; font-weight: 700; color: var(--premium-text-secondary);">
+                                                        <?php echo $c['handler_name'] ? strtoupper(substr($c['handler_name'], 0, 1)) : '?'; ?>
+                                                    </div>
+                                                    <span class="small"><?php echo $c['handler_name'] ? htmlspecialchars($c['handler_name']) : '<em class="text-muted-color">Unassigned</em>'; ?></span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <?php 
+                                                $pClass = 'badge-soft-info';
+                                                if (strtolower($c['priority']) == 'high') $pClass = 'badge-soft-danger';
+                                                if (strtolower($c['priority']) == 'medium') $pClass = 'badge-soft-warning';
+                                                ?>
+                                                <span class="badge-soft <?php echo $pClass; ?>"><?php echo $c['priority']; ?></span>
+                                            </td>
+                                            <td>
+                                                <?php
+                                                $statusMap = [
+                                                    'Pending' => 'badge-soft-warning',
+                                                    'In-Progress' => 'badge-soft-info',
+                                                    'Resolved' => 'badge-soft-success',
+                                                    'Rejected' => 'badge-soft-danger',
+                                                ];
+                                                $sClass = $statusMap[$c['status']] ?? 'badge-soft-info';
+                                                $statusIcon = [
+                                                    'Pending' => 'bi-clock',
+                                                    'In-Progress' => 'bi-arrow-repeat',
+                                                    'Resolved' => 'bi-check-circle',
+                                                    'Rejected' => 'bi-x-circle',
+                                                ];
+                                                $sIcon = $statusIcon[$c['status']] ?? 'bi-info-circle';
+                                                ?>
+                                                <span class="badge-soft <?php echo $sClass; ?>">
+                                                    <i class="bi <?php echo $sIcon; ?>"></i> <?php echo $c['status']; ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="small text-muted-color">
+                                                    <i class="bi bi-calendar3 me-1"></i><?php echo date('M j, Y', strtotime($c['updated_at'])); ?>
+                                                </span>
+                                            </td>
+                                            <td class="text-end pe-4">
+                                                <div class="d-flex justify-content-end gap-2">
+                                                    <?php if ($c['assigned_to']): ?>
+                                                        <a href="messages.php?receiver_id=<?php echo $c['assigned_to']; ?>" 
+                                                           class="btn btn-sm btn-light rounded-pill px-3 fw-600" style="font-size: 0.75rem;">
+                                                            <i class="bi bi-chat-dots me-1"></i>Chat
+                                                        </a>
+                                                    <?php endif; ?>
+                                                    <button class="btn btn-sm rounded-pill px-3 fw-600" 
+                                                            style="font-size: 0.75rem; background: var(--premium-primary-soft); color: var(--premium-primary); border: none;"
+                                                            onclick="viewHistory(<?php echo $c['id']; ?>)">
+                                                        <i class="bi bi-clock-history me-1"></i>History
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 rounded-xl overflow-hidden" style="box-shadow: var(--premium-shadow-xl);">
+            <div class="modal-header py-3 px-4" style="border-bottom: 1px solid var(--premium-border-light); background: var(--premium-bg);">
+                <h5 class="modal-title fw-700" style="color: var(--premium-text-heading);">
+                    <i class="bi bi-clock-history me-2" style="color: var(--premium-primary);"></i>Complaint #<span id="modalCompId"></span> History
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="historyTimeline" class="history-timeline"></div>
+            </div>
         </div>
     </div>
+</div>
 
-    <style>
-        .history-timeline { position: relative; padding-left: 30px; }
-        .history-timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: rgba(16, 185, 129, 0.2); }
-        .history-item { position: relative; margin-bottom: 25px; }
-        .history-item::before { content: ''; position: absolute; left: -25px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: #10b981; border: 3px solid #000; z-index: 1; }
-        .history-actor { font-weight: bold; color: #10b981; font-size: 0.9rem; }
-        .history-date { font-size: 0.75rem; color: #888; margin-left: 10px; }
-        .history-comment { margin-top: 5px; color: #ddd; font-size: 0.9rem; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
-    </style>
+<style>
+    /* Filter Buttons */
+    .filter-btn.active {
+        background: var(--premium-primary) !important;
+        color: #fff !important;
+        border: none;
+    }
+    .filter-btn:not(.active) {
+        background: var(--premium-bg);
+        color: var(--premium-text-body);
+        border: 1px solid var(--premium-border);
+    }
+    .filter-btn:not(.active):hover {
+        background: var(--premium-white);
+        border-color: var(--premium-primary);
+        color: var(--premium-primary);
+    }
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const modal = new bootstrap.Modal(document.getElementById('historyModal'));
-        
-        async function viewHistory(id) {
-            document.getElementById('modalCompId').innerText = id;
-            document.getElementById('historyTimeline').innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-success"></i></div>';
-            modal.show();
+    /* History Timeline */
+    .history-timeline { position: relative; padding-left: 30px; }
+    .history-timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: var(--premium-border); }
+    .history-item { position: relative; margin-bottom: 25px; }
+    .history-item::before { content: ''; position: absolute; left: -25px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: var(--premium-primary); border: 3px solid var(--premium-white); box-shadow: 0 0 0 2px var(--premium-border); z-index: 1; }
+    .history-actor { font-weight: 700; color: var(--premium-primary); font-size: 0.875rem; }
+    .history-date { font-size: 0.75rem; color: var(--premium-text-muted); margin-left: 10px; }
+    .history-comment { margin-top: 5px; color: var(--premium-text-body); font-size: 0.875rem; background: var(--premium-bg); padding: 12px; border-radius: var(--radius-md); border: 1px solid var(--premium-border-light); }
+</style>
 
-            try {
-                const response = await fetch(`../api/get_complaint_history.php?id=${id}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    let html = '';
-                    if (data.history.length === 0) {
-                        html = '<p class="text-center text-muted py-4">No logged history found for this item.</p>';
-                    } else {
-                        data.history.forEach(item => {
-                            html += `
-                                <div class="history-item">
-                                    <div class="d-flex align-items-center">
-                                        <span class="history-actor">${item.actor_name} (${item.actor_role.toUpperCase()})</span>
-                                        <span class="history-date">${new Date(item.action_date).toLocaleString()}</span>
-                                    </div>
-                                    <div class="fw-bold text-light small mt-1">${item.action}</div>
-                                    <div class="history-comment">${item.comments || 'No specific comments provided.'}</div>
-                                </div>
-                            `;
-                        });
-                    }
-                    document.getElementById('historyTimeline').innerHTML = html;
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function() {
+    'use strict';
+
+    // ═══════════════════════════════════════
+    // STATUS FILTER
+    // ═══════════════════════════════════════
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const rows = document.querySelectorAll('#complaints-table tbody tr');
+
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const filter = btn.dataset.filter;
+            rows.forEach(row => {
+                if (filter === 'all' || row.dataset.status === filter) {
+                    row.style.display = '';
+                    row.style.animation = 'fadeInUp 0.3s ease forwards';
                 } else {
-                    document.getElementById('historyTimeline').innerHTML = `<p class="text-danger">${data.message}</p>`;
+                    row.style.display = 'none';
                 }
-            } catch (err) {
-                document.getElementById('historyTimeline').innerHTML = `<p class="text-danger">Failed to load history.</p>`;
+            });
+        });
+    });
+
+    // ═══════════════════════════════════════
+    // HISTORY MODAL
+    // ═══════════════════════════════════════
+    window.viewHistory = async function(id) {
+        document.getElementById('modalCompId').innerText = id;
+        document.getElementById('historyTimeline').innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border" style="color: var(--premium-primary);" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        `;
+        
+        const modal = new bootstrap.Modal(document.getElementById('historyModal'));
+        modal.show();
+
+        try {
+            const response = await fetch(`../api/get_complaint_history.php?id=${id}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                let html = '';
+                if (data.history.length === 0) {
+                    html = '<p class="text-center py-4" style="color: var(--premium-text-muted);">No history found.</p>';
+                } else {
+                    data.history.forEach(item => {
+                        html += `
+                            <div class="history-item">
+                                <div class="d-flex align-items-center flex-wrap">
+                                    <span class="history-actor">${item.actor_name} (${item.actor_role.toUpperCase()})</span>
+                                    <span class="history-date">${new Date(item.created_at).toLocaleString()}</span>
+                                </div>
+                                <div class="fw-700 small mt-1" style="color: var(--premium-text-heading);">${item.action}</div>
+                                <div class="history-comment">${item.comments || 'No specific comments provided.'}</div>
+                            </div>
+                        `;
+                    });
+                }
+                document.getElementById('historyTimeline').innerHTML = html;
+            } else {
+                document.getElementById('historyTimeline').innerHTML = `<p style="color: var(--premium-coral);">${data.message}</p>`;
             }
+        } catch (err) {
+            document.getElementById('historyTimeline').innerHTML = `<p style="color: var(--premium-coral);">Failed to load history.</p>`;
         }
-    </script>
+    };
+})();
+</script>
+
+<?php include '../components/footer.php'; ?>
 </body>
 </html>
