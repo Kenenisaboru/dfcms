@@ -14,6 +14,7 @@ require_once CONFIG_PATH . '/permissions.php';
 require_once CONFIG_PATH . '/notifications.php';
 require_once LIB_PATH . '/CSRF.php';
 require_once LIB_PATH . '/DebugLogger.php';
+require_once LIB_PATH . '/SecurityService.php';
 
 // Global App Settings
 $app_name = "DFCMS";
