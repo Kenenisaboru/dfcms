@@ -20,6 +20,6 @@ $extra_css = isset($extra_css) ? $extra_css : '';
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
     <!-- Master Design System -->
-    <link href="<?php echo $base_path; ?>assets/css/dfcms-modern.css" rel="stylesheet">
+    <link href="<?php echo $base_path; ?>assets/css/dfcms-modern.css?v=<?php echo time(); ?>" rel="stylesheet">
     <?php echo $extra_css; ?>
 </head>
