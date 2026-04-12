@@ -1,6 +1,6 @@
 <?php
 // lib/SecurityService.php
-require_once 'config/database.php';
+require_once __DIR__ . '/../config/database.php';
 
 class SecurityService {
     private $pdo;
@@ -103,7 +103,21 @@ class SecurityService {
     /**
      * Rate Limiting
      */
+    private function ensureRateLimitsTableExists() {
+        $sql = "CREATE TABLE IF NOT EXISTS `rate_limits` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `action` varchar(50) NOT NULL,
+            `identifier` varchar(255) NOT NULL,
+            `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            KEY `idx_action_identifier` (`action`,`identifier`),
+            KEY `idx_created_at` (`created_at`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+        $this->pdo->exec($sql);
+    }
+
     public function checkRateLimit($action, $identifier) {
+        $this->ensureRateLimitsTableExists();
         $limits = $this->getRateLimits();
         $limit = $limits[$action];
         
@@ -144,7 +158,25 @@ class SecurityService {
     /**
      * Security Audit Logging
      */
+    private function ensureAuditLogTableExists() {
+        $sql = "CREATE TABLE IF NOT EXISTS `security_audit_log` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `event_type` varchar(100) NOT NULL,
+            `user_id` int(11) DEFAULT NULL,
+            `ip_address` varchar(45) DEFAULT NULL,
+            `user_agent` text DEFAULT NULL,
+            `details` text DEFAULT NULL,
+            `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (`id`),
+            KEY `idx_event_type` (`event_type`),
+            KEY `idx_user_id` (`user_id`),
+            KEY `idx_created_at` (`created_at`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+        $this->pdo->exec($sql);
+    }
+
     public function logSecurityEvent($eventType, $userId, $details = array()) {
+        $this->ensureAuditLogTableExists();
         $stmt = $this->pdo->prepare("
             INSERT INTO security_audit_log 
             (event_type, user_id, ip_address, user_agent, details, created_at) 
@@ -190,7 +222,25 @@ class SecurityService {
     /**
      * Session Management
      */
+    private function ensureSessionsTableExists() {
+        $sql = "CREATE TABLE IF NOT EXISTS `user_sessions` (
+            `id` int(11) NOT NULL AUTO_INCREMENT,
+            `user_id` int(11) NOT NULL,
+            `session_id` varchar(255) NOT NULL,
+            `ip_address` varchar(45) DEFAULT NULL,
+            `user_agent` text DEFAULT NULL,
+            `created_at` timestamp DEFAULT CURRENT_TIMESTAMP,
+            `expires_at` timestamp NOT NULL,
+            PRIMARY KEY (`id`),
+            UNIQUE KEY `unique_session` (`session_id`),
+            KEY `idx_user_id` (`user_id`),
+            KEY `idx_expires_at` (`expires_at`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+        $this->pdo->exec($sql);
+    }
+
     public function createSecureSession($userId) {
+        $this->ensureSessionsTableExists();
         $sessionId = session_id();
         $config = $this->getSessionConfig();
         
