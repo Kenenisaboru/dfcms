@@ -8,78 +8,94 @@ check_login();
 $role = $_SESSION['role'];
 $userId = $_SESSION['user_id'];
 
-// Check permission: CR, Teacher, or HOD only
-if (!in_array($role, ['cr', 'teacher', 'hod'])) {
-    die("Access Denied: Your role does not have permission to access the Forwarding tool.");
+// Check permission: CR, Teacher, HOD, or Lab Assistant
+if (!in_array($role, ['cr', 'teacher', 'hod', 'lab_assistant'])) {
+    die("Access Denied: Your role does not have permission to access the Action Hub.");
 }
 
 $error = '';
 $success = '';
 
-// Handle Forwarding Action
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['forward_action'])) {
-    // Validate CSRF securely
+// BASE ACTION HANDLER
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     CSRF::validateRequest();
-    
     $complaintId = isset($_POST['complaint_id']) ? (int)$_POST['complaint_id'] : 0;
-    $targetRole = isset($_POST['target_role']) ? trim($_POST['target_role']) : '';
-    $comment = isset($_POST['forward_comment']) ? trim($_POST['forward_comment']) : '';
+    
+    // 1. FORWARD ACTION
+    if (isset($_POST['forward_action'])) {
+        $targetRole = isset($_POST['target_role']) ? trim($_POST['target_role']) : '';
+        $comment = isset($_POST['action_comment']) ? trim($_POST['action_comment']) : '';
 
-    if ($complaintId === 0 || empty($targetRole) || empty($comment)) {
-        $error = "Please fill out all required forwarding fields.";
-    } else {
-        // ARCHITECTURAL PERMISSION CHECK
-        if (!AccessManager::canForward($role, $targetRole)) {
+        if ($complaintId === 0 || empty($targetRole) || empty($comment)) {
+            $error = "Please fill out all fields to route this complaint.";
+        } elseif (!AccessManager::canForward($role, $targetRole)) {
             $error = "UNAUTHORIZED ROUTING: " . strtoupper($role) . " cannot forward to " . strtoupper($targetRole);
         } else {
             try {
                 $pdo->beginTransaction();
-                
-                // Update complaint
                 $stmt = $pdo->prepare("UPDATE complaints SET current_handler_role = ?, status = 'Forwarded' WHERE id = ?");
                 $stmt->execute([$targetRole, $complaintId]);
 
-                // Add to history
                 $stmtHist = $pdo->prepare("INSERT INTO complaint_history (complaint_id, action_by, action, comments) VALUES (?, ?, 'Forwarded', ?)");
                 $stmtHist->execute([$complaintId, $userId, "Forwarded to " . strtoupper($targetRole) . ": " . $comment]);
 
-                // Notify Student that it was forwarded
-                $stmtStudent = $pdo->prepare("SELECT student_id, category FROM complaints WHERE id = ?");
-                $stmtStudent->execute([$complaintId]);
-                $comp = $stmtStudent->fetch();
-                if ($comp) {
-                    NotificationManager::send($pdo, $comp['student_id'], "Your complaint (#$complaintId) was forwarded to " . strtoupper($targetRole) . ".", "student/tracker.php?id=$complaintId", 'complaint_assigned', 'Complaint Forwarded');
-                }
+                NotificationManager::sendToRole($pdo, $targetRole, "Complaint #$complaintId forwarded to you.", "representative/forward.php", 'complaint_assigned', 'Complaint Received');
 
                 $pdo->commit();
-                $success = "Complaint #$complaintId forwarded successfully to " . strtoupper($targetRole);
-            } catch (Exception $e) {
-                if ($pdo->inTransaction()) {
-                    $pdo->rollBack();
-                }
-                error_log('Forward action failed: ' . $e->getMessage());
-                $error = "Operation failed. Please try again.";
-            }
+                $success = "Complaint #$complaintId forwarded successfully.";
+            } catch (Exception $e) { $pdo->rollBack(); $error = "Action failed."; }
+        }
+    }
+
+    // 2. RESOLVE ACTION
+    if (isset($_POST['resolve_action'])) {
+        $comment = isset($_POST['action_comment']) ? trim($_POST['action_comment']) : '';
+        if ($complaintId === 0 || empty($comment)) {
+            $error = "Please provide a completion comment.";
+        } else {
+            try {
+                $pdo->beginTransaction();
+                $pdo->prepare("UPDATE complaints SET status = 'Resolved', assigned_to = ? WHERE id = ?")->execute([$userId, $complaintId]);
+                $pdo->prepare("INSERT INTO complaint_history (complaint_id, action_by, action, comments) VALUES (?, ?, 'Resolved', ?)")->execute([$complaintId, $userId, $comment]);
+                
+                $stmtStudent = $pdo->prepare("SELECT student_id FROM complaints WHERE id = ?");
+                $stmtStudent->execute([$complaintId]);
+                NotificationManager::send($pdo, $stmtStudent->fetchColumn(), "Your complaint #$complaintId has been RESOLVED.", "student/tracker.php", 'complaint_resolved', 'Issue Resolved');
+
+                $pdo->commit();
+                $success = "Complaint resolved successfully.";
+            } catch (Exception $e) { $pdo->rollBack(); $error = "Action failed."; }
+        }
+    }
+
+    // 3. REJECT ACTION
+    if (isset($_POST['reject_action'])) {
+        $comment = isset($_POST['action_comment']) ? trim($_POST['action_comment']) : '';
+        if ($complaintId === 0 || empty($comment)) {
+            $error = "Please provide a rejection reason.";
+        } else {
+            try {
+                $pdo->beginTransaction();
+                $pdo->prepare("UPDATE complaints SET status = 'Rejected', assigned_to = ? WHERE id = ?")->execute([$userId, $complaintId]);
+                $pdo->prepare("INSERT INTO complaint_history (complaint_id, action_by, action, comments) VALUES (?, ?, 'Rejected', ?)")->execute([$complaintId, $userId, $comment]);
+                
+                $stmtStudent = $pdo->prepare("SELECT student_id FROM complaints WHERE id = ?");
+                $stmtStudent->execute([$complaintId]);
+                NotificationManager::send($pdo, $stmtStudent->fetchColumn(), "Your complaint #$complaintId was rejected.", "student/tracker.php", 'complaint_rejected', 'Issue Closed');
+
+                $pdo->commit();
+                $success = "Complaint rejected.";
+            } catch (Exception $e) { $pdo->rollBack(); $error = "Action failed."; }
         }
     }
 }
 
-// Fetch complaints currently routed to this role
+// Fetch complaints
 $inbox = [];
 if ($pdo) {
-    try {
-        $stmt = $pdo->prepare("SELECT c.*, u.full_name as student_name 
-                              FROM complaints c 
-                              JOIN users u ON c.student_id = u.id 
-                              WHERE c.current_handler_role = ? AND c.status != 'Resolved'
-                              ORDER BY c.priority DESC, c.created_at ASC");
-        $stmt->execute([$role]);
-        $inbox = $stmt->fetchAll();
-    } catch (Throwable $e) {
-        $error = "Failed to load inbox data.";
-    }
-} else {
-    $error = "Database connection unavailable.";
+    $stmt = $pdo->prepare("SELECT c.*, u.full_name as student_name FROM complaints c JOIN users u ON c.student_id = u.id WHERE (c.current_handler_role = ? OR c.assigned_to = ?) AND c.status NOT IN ('Resolved', 'Rejected') ORDER BY c.priority DESC, c.created_at ASC");
+    $stmt->execute([$role, $userId]);
+    $inbox = $stmt->fetchAll();
 }
 ?>
 <!DOCTYPE html>
@@ -91,6 +107,14 @@ if ($pdo) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="../assets/css/next-gen-ui.css" rel="stylesheet">
+    <style>
+        .btn-action-group { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-resolve { background: #10b981; color: #000; font-weight: bold; border: none; }
+        .btn-reject { background: #ef4444; color: #fff; font-weight: bold; border: none; }
+        .btn-route { background: #3b82f6; color: #fff; font-weight: bold; border: none; }
+        .action-card { transition: 0.3s; }
+        .action-card:hover { transform: scale(1.01); }
+    </style>
 </head>
 <body class="dark-mode">
     <?php include '../components/navbar.php'; ?>
@@ -105,7 +129,7 @@ if ($pdo) {
             <?php if (count($inbox) > 0): ?>
                 <?php foreach ($inbox as $item): ?>
                     <div class="col-md-12 mb-4">
-                        <div class="card card-custom bg-glass border-0 shadow rounded-4 p-4">
+                        <div class="card card-custom action-card bg-glass border-0 shadow rounded-4 p-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h4 class="mb-0 text-white fw-bold">Issue #<?php echo $item['id']; ?>: <?php echo htmlspecialchars($item['category']); ?></h4>
                                 <span class="badge rounded-pill bg-<?php echo strtolower($item['priority']) === 'high' ? 'danger' : (strtolower($item['priority']) === 'medium' ? 'warning text-dark' : 'info'); ?> px-3 py-2 small fw-bold"><?php echo $item['priority']; ?> Priority</span>
@@ -123,30 +147,39 @@ if ($pdo) {
                             <form method="POST" class="pt-3 border-top border-secondary border-opacity-10">
                                 <?php echo CSRF::input(); ?>
                                 <input type="hidden" name="complaint_id" value="<?php echo $item['id']; ?>">
+                                
                                 <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label">Action Log / Comments:</label>
+                                        <textarea name="action_comment" class="form-control" rows="2" placeholder="Describe your action or reason for routing/closing..." required></textarea>
+                                    </div>
+                                    
                                     <div class="col-md-4">
-                                        <label class="form-label">Forward To Role:</label>
-                                        <select name="target_role" class="form-select" required>
+                                        <label class="form-label">Forward To (Optional):</label>
+                                        <select name="target_role" class="form-select">
                                             <option value="">Select Target...</option>
                                             <?php if($role == 'cr'): ?>
                                                 <option value="teacher">Teacher</option>
                                                 <option value="lab_assistant">Lab Assistant</option>
-                                                <option value="hod">Department Head (HOD)</option>
+                                                <option value="hod">HOD</option>
                                             <?php elseif($role == 'teacher'): ?>
                                                 <option value="cr">Forward to CR</option>
                                                 <option value="hod">Forward to HOD</option>
+                                                <option value="lab_assistant">Lab Assistant</option>
                                             <?php elseif($role == 'hod'): ?>
                                                 <option value="teacher">Forward to Teacher</option>
+                                            <?php elseif($role == 'lab_assistant'): ?>
+                                                <option value="teacher">Report back to Teacher</option>
+                                                <option value="cr">Update CR</option>
                                             <?php endif; ?>
                                         </select>
                                     </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Routing Comment:</label>
-                                        <input type="text" name="forward_comment" class="form-control" placeholder="Explain the reason for routing..." required>
-                                    </div>
-                                    <div class="col-md-2 d-flex align-items-end gap-2">
-                                        <button type="submit" name="forward_action" class="btn btn-submit w-100"><i class="fas fa-route me-1"></i> ROUTE</button>
-                                        <a href="../student/messages.php?receiver_id=<?php echo $item['student_id']; ?>" class="btn btn-outline-success border-2 rounded-pill px-3 shadow-sm d-flex align-items-center justify-content-center" title="Message Student">
+                                    
+                                    <div class="col-md-8 d-flex align-items-end gap-2">
+                                        <button type="submit" name="forward_action" class="btn btn-route flex-grow-1 py-2"><i class="fas fa-route me-1"></i> ROUTE</button>
+                                        <button type="submit" name="resolve_action" class="btn btn-resolve flex-grow-1 py-2"><i class="fas fa-check-circle me-1"></i> RESOLVE</button>
+                                        <button type="submit" name="reject_action" class="btn btn-reject flex-grow-1 py-2"><i class="fas fa-times-circle me-1"></i> REJECT</button>
+                                        <a href="../student/messages.php?receiver_id=<?php echo $item['student_id']; ?>" class="btn btn-outline-light border-2 rounded-3 px-3">
                                             <i class="fas fa-comment-dots"></i>
                                         </a>
                                     </div>
@@ -158,7 +191,7 @@ if ($pdo) {
             <?php else: ?>
                 <div class="col-12 text-center py-5">
                     <i class="fas fa-check-circle fa-4x text-dim mb-3 opacity-25"></i>
-                    <p class="text-dim">Workflow queue is internal. All items processed.</p>
+                    <p class="text-dim">Queue is empty. Excellent work!</p>
                 </div>
             <?php endif; ?>
         </div>
