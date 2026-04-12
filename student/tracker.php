@@ -186,7 +186,7 @@ $complaints = $stmt->fetchAll();
                                                     <i class="fas fa-comment-dots me-1"></i> Message
                                                 </a>
                                             <?php endif; ?>
-                                            <button class="btn btn-sm btn-view rounded-pill px-3" onclick="alert('Viewing historical details is being finalized.')">
+                                            <button class="btn btn-sm btn-view rounded-pill px-3" onclick="viewHistory(<?php echo $c['id']; ?>)">
                                                 <i class="fas fa-history me-1"></i> View Log
                                             </button>
                                         </div>
@@ -207,5 +207,73 @@ $complaints = $stmt->fetchAll();
             </div>
         </div>
     </div>
+
+    <!-- History Modal -->
+    <div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content bg-glass border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header border-bottom border-secondary border-opacity-10 py-3 px-4">
+                    <h5 class="modal-title fw-bold text-white">Complaint #<span id="modalCompId"></span> History</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="historyTimeline" class="history-timeline">
+                        <!-- History items injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .history-timeline { position: relative; padding-left: 30px; }
+        .history-timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: rgba(16, 185, 129, 0.2); }
+        .history-item { position: relative; margin-bottom: 25px; }
+        .history-item::before { content: ''; position: absolute; left: -25px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: #10b981; border: 3px solid #000; z-index: 1; }
+        .history-actor { font-weight: bold; color: #10b981; font-size: 0.9rem; }
+        .history-date { font-size: 0.75rem; color: #888; margin-left: 10px; }
+        .history-comment { margin-top: 5px; color: #ddd; font-size: 0.9rem; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const modal = new bootstrap.Modal(document.getElementById('historyModal'));
+        
+        async function viewHistory(id) {
+            document.getElementById('modalCompId').innerText = id;
+            document.getElementById('historyTimeline').innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin fa-2x text-success"></i></div>';
+            modal.show();
+
+            try {
+                const response = await fetch(`../api/get_complaint_history.php?id=${id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    let html = '';
+                    if (data.history.length === 0) {
+                        html = '<p class="text-center text-muted py-4">No logged history found for this item.</p>';
+                    } else {
+                        data.history.forEach(item => {
+                            html += `
+                                <div class="history-item">
+                                    <div class="d-flex align-items-center">
+                                        <span class="history-actor">${item.actor_name} (${item.actor_role.toUpperCase()})</span>
+                                        <span class="history-date">${new Date(item.action_date).toLocaleString()}</span>
+                                    </div>
+                                    <div class="fw-bold text-light small mt-1">${item.action}</div>
+                                    <div class="history-comment">${item.comments || 'No specific comments provided.'}</div>
+                                </div>
+                            `;
+                        });
+                    }
+                    document.getElementById('historyTimeline').innerHTML = html;
+                } else {
+                    document.getElementById('historyTimeline').innerHTML = `<p class="text-danger">${data.message}</p>`;
+                }
+            } catch (err) {
+                document.getElementById('historyTimeline').innerHTML = `<p class="text-danger">Failed to load history.</p>`;
+            }
+        }
+    </script>
 </body>
 </html>
