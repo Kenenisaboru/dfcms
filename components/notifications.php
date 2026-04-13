@@ -67,8 +67,14 @@ if ($userId) {
             </li>
         <?php else: ?>
             <?php foreach ($notifications as $notification): ?>
-                <li class="dropdown-item notification-item <?php echo ($notification['is_read'] ?? true) ? 'read' : 'unread'; ?>" 
-                    onclick="handleNotificationClick(<?php echo $notification['id'] ?? 0; ?>, '<?php echo $notification['type'] ?? 'info'; ?>', <?php echo !empty($notification['data']) ? $notification['data'] : '{}'; ?>)"
+                <?php
+                $notificationData = !empty($notification['data']) ? $notification['data'] : '{}';
+                if (is_string($notificationData)) {
+                    $notificationData = json_decode($notificationData, true) ?: [];
+                }
+                ?>
+                <li class="dropdown-item notification-item <?php echo ($notification['is_read'] ?? true) ? 'read' : 'unread'; ?>"
+                    onclick="handleNotificationClick(<?php echo (int)($notification['id'] ?? 0); ?>, '<?php echo addslashes($notification['type'] ?? 'info'); ?>', <?php echo json_encode($notificationData); ?>)"
                     style="cursor: pointer;">
                     <div class="d-flex gap-3 align-items-start">
                         <div class="flex-shrink-0">
@@ -180,10 +186,15 @@ function showTelegramToast(n) {
 function handleNotificationClick(notificationId, type, data) {
     // Mark as read
     markNotificationRead(notificationId);
-    
+
     // Handle different notification types
-    const baseUrl = '<?php echo isset($_SESSION['role']) && $_SESSION['role'] === 'student' ? '/dfcms/student/' : '/dfcms/student/'; ?>';
-    
+    const userRole = '<?php echo isset($_SESSION['role']) ? addslashes($_SESSION['role']) : 'student'; ?>';
+    let baseUrl = '/dfcms/student/';
+
+    if (userRole === 'teacher' || userRole === 'admin' || userRole === 'hod') {
+        baseUrl = '/dfcms/';
+    }
+
     switch(type) {
         case 'complaint_assigned':
         case 'cr_response':
@@ -202,7 +213,7 @@ function handleNotificationClick(notificationId, type, data) {
 }
 
 function markNotificationRead(notificationId) {
-    fetch('../api/mark_notification_read.php', {
+    fetch('/dfcms/api/mark_notification_read.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -226,7 +237,7 @@ function markNotificationRead(notificationId) {
 }
 
 function markAllNotificationsRead() {
-    fetch('../api/mark_all_notifications_read.php', {
+    fetch('/dfcms/api/mark_all_notifications_read.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -244,7 +255,7 @@ function markAllNotificationsRead() {
 
 // Auto-refresh notifications every 4 seconds for Telegram-style updates.
 setInterval(() => {
-    fetch('../api/get_latest_notifications.php?limit=5&unread_only=1')
+    fetch('/dfcms/api/get_latest_notifications.php?limit=5&unread_only=1')
         .then(response => response.json())
         .then(data => {
             if (!data.success) return;
