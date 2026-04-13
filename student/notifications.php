@@ -117,7 +117,8 @@ $unreadCount = $notificationService->getUnreadCount($userId);
                                         <?php
                                         $iconClass = 'fa-info-circle';
                                         $iconBg = 'bg-info';
-                                        switch($notification['type']) {
+                                        $notifType = $notification['type'] ?? 'info';
+                                        switch($notifType) {
                                             case 'complaint_assigned':
                                                 $iconClass = 'fa-clipboard-list';
                                                 $iconBg = 'bg-warning';
@@ -147,8 +148,8 @@ $unreadCount = $notificationService->getUnreadCount($userId);
                                     <div class="col">
                                         <div class="d-flex justify-content-between align-items-start">
                                             <div>
-                                                <h6 class="mb-1"><?php echo htmlspecialchars($notification['title']); ?></h6>
-                                                <p class="text-muted mb-2"><?php echo htmlspecialchars($notification['message']); ?></p>
+                                                <h6 class="mb-1"><?php echo htmlspecialchars($notification['title'] ?? 'Notification'); ?></h6>
+                                                <p class="text-muted mb-2"><?php echo htmlspecialchars($notification['message'] ?? ''); ?></p>
                                                 <small class="text-muted">
                                                     <i class="far fa-clock me-1"></i>
                                                     <?php echo date('M j, Y, g:i A', strtotime($notification['created_at'])); ?>
