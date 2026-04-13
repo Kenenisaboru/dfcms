@@ -14,8 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
         require_once '../config/database.php';
         $ip_clear = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-        $pdo->prepare("DELETE FROM rate_limits WHERE action = 'login' AND identifier = ?")->execute([$ip_clear]);
-        $pdo->exec("UPDATE users SET login_attempts = 0, locked_until = NULL WHERE locked_until IS NOT NULL AND locked_until < NOW()");
+        if ($pdo) {
+            $pdo->prepare("DELETE FROM rate_limits WHERE identifier = ?")->execute([$ip_clear]);
+            $pdo->prepare("UPDATE users SET login_attempts = 0, locked_until = NULL WHERE email = ?")->execute([$_SESSION['login_email'] ?? '']);
+        }
     } catch (Exception $e) { /* ignore */ }
 }
 
