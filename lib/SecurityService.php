@@ -135,6 +135,11 @@ class SecurityService {
     }
 
     public function checkRateLimit($action, $identifier) {
+        // Bypass rate limiting if APP_DEBUG is true (development convenience)
+        if (function_exists('app_debug') && app_debug()) {
+            return true;
+        }
+
         $this->ensureRateLimitsTableExists();
         $limits = $this->getRateLimits();
         $limit = $limits[$action];
@@ -369,9 +374,9 @@ class SecurityService {
     
     private function getRateLimits() {
         return array(
-            'login' => array('attempts' => 5, 'window' => 900),
-            'password_reset' => array('attempts' => 3, 'window' => 3600),
-            'api' => array('requests' => 100, 'window' => 60)
+            'login' => array('attempts' => 10, 'window' => 900),
+            'password_reset' => array('attempts' => 5, 'window' => 3600),
+            'api' => array('requests' => 200, 'window' => 60)
         );
     }
 }
