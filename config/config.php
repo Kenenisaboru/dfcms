@@ -50,7 +50,8 @@ function env_value($key, $default = null) {
 }
 
 function app_debug() {
-    return strtolower((string) env_value('APP_DEBUG', 'false')) === 'true';
+    // Enable debug by default in development if not specified
+    return strtolower((string) env_value('APP_DEBUG', 'true')) === 'true';
 }
 
 /**
