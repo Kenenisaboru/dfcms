@@ -82,7 +82,7 @@ if ($userId) {
                             $iconClass = 'bi-info-circle-fill';
                             $iconBg = 'var(--premium-info-soft)';
                             $iconColor = 'var(--premium-info)';
-                            switch($notification['type']) {
+                            switch($notification['type'] ?? 'info') {
                                 case 'complaint_assigned':
                                     $iconClass = 'bi-clipboard2-check-fill';
                                     $iconBg = 'var(--premium-amber-soft)';
