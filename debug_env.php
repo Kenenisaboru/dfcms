@@ -7,7 +7,7 @@ echo "PHP Version: " . phpversion() . "<br>";
 $host = 'localhost';
 $db   = 'dfcms';
 $user = 'root';
-$pass = '12345678';
+$pass = '12345';
 
 echo "Attempting connection to $host with user $user and password provided...<br>";
 

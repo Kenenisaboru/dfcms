@@ -23,7 +23,7 @@ class AccessManager {
 
     /**
      * Validates if a user can forward a complaint to a specific role
-     */
+     */ 
     public static function canForward($senderRole, $targetRole) {
         // Forwarding follows communication rules, but typically upward for CR/Students
         return self::canCommunicate($senderRole, $targetRole);

@@ -1,0 +1,14 @@
+# assets/uploads/.htaccess
+# Disable execution of scripts in this directory for security
+Options -Indexes
+RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .phps .pl .py .cgi .sh .asp .aspx .cshtml .js
+SetHandler default-handler
+
+<Files *>
+    SetHandler default-handler
+</Files>
+
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|phps|pl|py|cgi|sh|asp|aspx|cshtml|js)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
