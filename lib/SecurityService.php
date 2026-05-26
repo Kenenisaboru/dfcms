@@ -8,13 +8,18 @@ class SecurityService {
     public function __construct() {
         global $pdo;
         $this->pdo = $pdo;
-        $this->ensureUserTableSchema();
+        if ($this->pdo) {
+            $this->ensureUserTableSchema();
+        }
     }
 
     /**
      * Ensures the users table has the necessary security columns
      */
     private function ensureUserTableSchema() {
+        if (!$this->pdo) {
+            return;
+        }
         // Check for login_attempts column
         $stmt = $this->pdo->query("SHOW COLUMNS FROM `users` LIKE 'login_attempts'");
         if (!$stmt->fetch()) {
@@ -140,6 +145,10 @@ class SecurityService {
             return true;
         }
 
+        if (!$this->pdo) {
+            return true; // Allow through if DB unavailable
+        }
+
         $this->ensureRateLimitsTableExists();
         $limits = $this->getRateLimits();
         $limit = $limits[$action];
@@ -199,6 +208,9 @@ class SecurityService {
     }
 
     public function logSecurityEvent($eventType, $userId, $details = array()) {
+        if (!$this->pdo) {
+            return false;
+        }
         $this->ensureAuditLogTableExists();
         $stmt = $this->pdo->prepare("
             INSERT INTO security_audit_log 

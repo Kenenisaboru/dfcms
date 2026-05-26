@@ -1,5 +1,37 @@
 <?php
 // config/database.php
+
+// Load .env file if it exists and values haven't been set yet
+if (!function_exists('dfcms_load_env')) {
+    function dfcms_load_env($envFile) {
+        if (!file_exists($envFile)) {
+            return;
+        }
+        $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '' || strpos($line, '#') === 0) {
+                continue;
+            }
+            if (strpos($line, '=') === false) {
+                continue;
+            }
+            list($key, $value) = explode('=', $line, 2);
+            $key   = trim($key);
+            $value = trim($value);
+            // Strip surrounding quotes
+            if (preg_match('/^(["\']).*\1$/', $value)) {
+                $value = substr($value, 1, -1);
+            }
+            if (!array_key_exists($key, $_ENV) && getenv($key) === false) {
+                putenv("{$key}={$value}");
+                $_ENV[$key] = $value;
+            }
+        }
+    }
+}
+dfcms_load_env(dirname(__DIR__) . '/.env');
+
 if (!function_exists('db_env')) {
     function db_env($key, $default = null) {
         $value = getenv($key);

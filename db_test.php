@@ -1,7 +1,7 @@
 <?php
 // db_test.php
-$host = 'localhost';
-$port = '3309'; // Updated port
+$host = '127.0.0.1';
+$port = '3307';
 $db   = 'dfcms';
 $user = 'root';
 $passwords = ['', '12345', '12345678', 'root', 'mysql', 'admin'];
