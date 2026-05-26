@@ -179,7 +179,7 @@ include 'components/head.php';
                                 <h5 class="fw-700 mb-0" style="color: var(--premium-text-heading);">Recent Complaints</h5>
                                 <p class="text-muted-color mb-0 x-small mt-1">Latest submissions and their status</p>
                             </div>
-                            <a href="<?php echo $role === 'student' ? 'student/tracker.php' : 'representative/forward.php'; ?>" 
+                            <a href="<?php echo $role === 'student' ? 'student/tracker.php' : ($role === 'hod' ? 'hod/tracker.php' : 'representative/forward.php'); ?>" 
                                class="btn btn-light btn-sm rounded-pill px-3 fw-600" id="btn-see-all-complaints">
                                 See All <i class="bi bi-arrow-right ms-1"></i>
                             </a>

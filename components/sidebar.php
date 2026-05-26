@@ -1,4 +1,4 @@
-<?php
+easter_date<?php
 // components/sidebar.php - Premium Sidebar Component v4.0
 $current_role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
 $current_page = basename($_SERVER['PHP_SELF']);
@@ -91,7 +91,25 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     </a>
                 <?php endif; ?>
 
-                <?php if (in_array($current_role, ['cr', 'teacher', 'hod'])): ?>
+                <?php if ($current_role === 'hod'): ?>
+                    <div class="sidebar-divider"></div>
+                    <h6 class="nav-heading">HOD Tools</h6>
+                    <a href="<?php echo base_url('hod/tracker.php'); ?>"
+                       class="nav-link <?php echo strpos($_SERVER['PHP_SELF'], 'hod/tracker') !== false ? 'active' : ''; ?>">
+                        <i class="bi bi-diagram-3-fill"></i>
+                        <span>Distribution Hub</span>
+                    </a>
+                    <a href="<?php echo base_url('representative/forward.php'); ?>"
+                       class="nav-link <?php echo strpos($current_page, 'forward') !== false && strpos($_SERVER['PHP_SELF'], 'hod/') === false ? 'active' : ''; ?>">
+                        <i class="bi bi-inbox-fill"></i>
+                        <span>Inbox</span>
+                    </a>
+                    <a href="<?php echo base_url('representative/forwarded.php'); ?>"
+                       class="nav-link <?php echo strpos($current_page, 'forwarded') !== false ? 'active' : ''; ?>">
+                        <i class="bi bi-send-fill"></i>
+                        <span>Forwarded</span>
+                    </a>
+                <?php elseif (in_array($current_role, ['cr', 'teacher'])): ?>
                     <a href="<?php echo base_url('representative/forward.php'); ?>" 
                        class="nav-link <?php echo strpos($current_page, 'forward') !== false ? 'active' : ''; ?>">
                         <i class="bi bi-inbox-fill"></i>
