@@ -71,6 +71,26 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     </a>
                 <?php endif; ?>
 
+                <?php if ($current_role === 'teacher'): ?>
+                    <a href="<?php echo base_url('teacher/submit_complaint.php'); ?>" 
+                       class="nav-link <?php echo strpos($current_page, 'submit') !== false ? 'active' : ''; ?>">
+                        <i class="bi bi-plus-circle-fill"></i>
+                        <span>Submit Complaint</span>
+                    </a>
+
+                    <a href="<?php echo base_url('teacher/tracker.php'); ?>" 
+                       class="nav-link <?php echo strpos($current_page, 'tracker') !== false ? 'active' : ''; ?>">
+                        <i class="bi bi-list-task"></i>
+                        <span>My Complaints</span>
+                    </a>
+
+                    <a href="<?php echo base_url('teacher/messages.php'); ?>" 
+                       class="nav-link <?php echo strpos($current_page, 'messages') !== false ? 'active' : ''; ?>">
+                        <i class="bi bi-chat-dots-fill"></i>
+                        <span>Messages</span>
+                    </a>
+                <?php endif; ?>
+
                 <?php if (in_array($current_role, ['cr', 'teacher', 'hod'])): ?>
                     <a href="<?php echo base_url('representative/forward.php'); ?>" 
                        class="nav-link <?php echo strpos($current_page, 'forward') !== false ? 'active' : ''; ?>">
