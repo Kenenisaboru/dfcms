@@ -141,7 +141,6 @@ body {
 .admin-layout {
     display: flex;
     min-height: 100vh;
-    align-items: flex-start;
 }
 
 .main-container {
@@ -163,9 +162,7 @@ body {
     z-index: 1050;
     transition: all var(--transition-base);
     flex-shrink: 0;
-    position: sticky;
-    top: 0;
-    height: 100vh;
+    position: relative;
     overflow: hidden;
 }
 
