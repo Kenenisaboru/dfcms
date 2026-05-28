@@ -26,22 +26,40 @@ $extra_css = '
     
     /* Navigation Override */
     .top-navbar.navbar {
-        background: rgba(255, 255, 255, 0.95) !important;
-        backdrop-filter: blur(10px) !important;
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-        padding: 1rem 0;
+        background: rgba(15, 23, 42, 0.0) !important;
+        backdrop-filter: blur(0px) !important;
+        border-bottom: 1px solid transparent;
+        padding: 1.25rem 0;
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1050;
+        transition: background 0.35s ease, backdrop-filter 0.35s ease, box-shadow 0.35s ease, padding 0.35s ease, border-color 0.35s ease;
     }
+
+    .top-navbar.navbar.scrolled {
+        background: rgba(15, 23, 42, 0.92) !important;
+        backdrop-filter: blur(16px) !important;
+        border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+        padding: 0.75rem 0;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+    }
+
+    /* Push content below fixed navbar */
+    body.landing-page { padding-top: 72px; }
     
     .navbar .btn-light {
         background: transparent !important;
-        color: #475569 !important;
-        border: 1px solid transparent !important;
+        color: rgba(255,255,255,0.85) !important;
+        border: 1px solid rgba(255,255,255,0.2) !important;
         transition: all 0.2s ease;
     }
     
     .navbar .btn-light:hover {
-        color: #0f172a !important;
-        background: rgba(0,0,0,0.03) !important;
+        color: #fff !important;
+        background: rgba(255,255,255,0.1) !important;
+        border-color: rgba(255,255,255,0.4) !important;
     }
     
     .navbar .btn-primary {
@@ -648,6 +666,36 @@ include 'components/head.php';
                 this.classList.toggle('bi-eye-slash');
             });
         }
+
+        // ── Sticky navbar: transparent → solid on scroll ──────────────────
+        (function () {
+            var navbar = document.querySelector('.top-navbar');
+            if (!navbar) return;
+
+            function onScroll() {
+                if (window.scrollY > 60) {
+                    navbar.classList.add('scrolled');
+                } else {
+                    navbar.classList.remove('scrolled');
+                }
+            }
+
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll(); // run once on load
+        })();
+
+        // ── Smooth scroll for anchor links ────────────────────────────────
+        document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+            anchor.addEventListener('click', function(e) {
+                var target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    var offset = 80; // navbar height
+                    var top = target.getBoundingClientRect().top + window.scrollY - offset;
+                    window.scrollTo({ top: top, behavior: 'smooth' });
+                }
+            });
+        });
     </script>
 </body>
 </html>
